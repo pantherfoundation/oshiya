@@ -1,0 +1,532 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_verifier",
+        "type": "address"
+      },
+      {
+        "internalType": "uint160",
+        "name": "_circuitId",
+        "type": "uint160"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "queueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "batchRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "numUtxosInBatch",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "leftLeafIndexInBusTree",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "busTreeNewRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "busBranchNewRoot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "BusBatchOnboarded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "branchIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "busBranchFinalRoot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "BusBranchFilled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "queueId",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueOpened",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "queueId",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueProcessed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "queueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "accumReward",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueRewardAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "miner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinerRewarded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "utxo",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "queueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "utxoIndexInBatch",
+        "type": "uint256"
+      }
+    ],
+    "name": "UtxoBusQueued",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "CIRCUIT_ID",
+    "outputs": [
+      {
+        "internalType": "uint160",
+        "name": "",
+        "type": "uint160"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "VERIFIER",
+    "outputs": [
+      {
+        "internalType": "contract IPantherVerifier",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "busTreeRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      }
+    ],
+    "name": "getBusQueue",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "commitment",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "nUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint96",
+            "name": "reward",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint40",
+            "name": "firstUtxoBlock",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUtxoBlock",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint32",
+            "name": "prevLink",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "nextLink",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct BusQueues.BusQueue",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBusQueuesStats",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "curQueueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "curQueueNumUtxos",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint96",
+        "name": "curQueueReward",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint32",
+        "name": "numPendingQueues",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "oldestPendingQueueLink",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBusTreeStats",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "numBatchesInBusTree",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "numUtxosInBusTree",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint40",
+        "name": "latestBranchFirstBatchBlock",
+        "type": "uint40"
+      },
+      {
+        "internalType": "uint40",
+        "name": "latestBatchBlock",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "maxLength",
+        "type": "uint32"
+      }
+    ],
+    "name": "getOldestPendingQueues",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "queueId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "nUtxos",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint96",
+            "name": "reward",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint40",
+            "name": "firstUtxoBlock",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUtxoBlock",
+            "type": "uint40"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "commitment",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct BusQueues.BusQueueRec[]",
+        "name": "queues",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "miner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "busTreeNewRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "batchRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "busBranchNewRoot",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct G1Point",
+            "name": "a",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256[2]",
+                "name": "x",
+                "type": "uint256[2]"
+              },
+              {
+                "internalType": "uint256[2]",
+                "name": "y",
+                "type": "uint256[2]"
+              }
+            ],
+            "internalType": "struct G2Point",
+            "name": "b",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "x",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "y",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct G1Point",
+            "name": "c",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SnarkProof",
+        "name": "proof",
+        "type": "tuple"
+      }
+    ],
+    "name": "onboardQueue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint96",
+        "name": "extraReward",
+        "type": "uint96"
+      }
+    ],
+    "name": "simulateAddBusQueueReward",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "utxos",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint96",
+        "name": "reward",
+        "type": "uint96"
+      }
+    ],
+    "name": "simulateAddUtxosToBusQueue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      }
+    ],
+    "name": "simulateSetBusQueueAsProcessed",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "commitment",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "nUtxos",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint96",
+        "name": "reward",
+        "type": "uint96"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
