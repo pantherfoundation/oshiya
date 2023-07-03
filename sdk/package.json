@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "repository": "git@gitlab.com:pantherprotocol/tech-team/miner-client.git",
   "author": "Panther Tech Team",
-  "license": "SEE LICENSE IN ./LICENSE",
+  "license": "SEE LICENSE IN ../LICENSE",
   "scripts": {
     "lint": "eslint '**/*.ts'",
     "lint:fix": "eslint --fix '**/*.ts'",
