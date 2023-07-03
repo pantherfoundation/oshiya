@@ -56,6 +56,27 @@ To start using the Panther Miner script, run the following command:
 yarn start
 ```
 
+## Docker Installation
+To run the Panther Miner in a Docker container, perform the following steps:
+
+1. Build the Docker image:
+```bash
+docker build -t miner-app .
+```
+
+2. Then run the image:
+```bash
+docker run miner-app
+```
+
+Or use docker-compose:
+
+```bash
+docker-compose up --build
+```
+
+
+
 ## Configuration
 
 The Panther Miner script requires the following configurations to be set in the

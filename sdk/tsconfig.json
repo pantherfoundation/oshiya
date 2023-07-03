@@ -28,6 +28,6 @@
     "strictNullChecks": true,
     "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "scripts"],
   "exclude": ["node_modules"]
 }
