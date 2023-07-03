@@ -9,6 +9,7 @@ import {BatchProcessing} from '../src/batch-processing';
 import {parseEnvVariables, logSettings} from '../src/env';
 import {log} from '../src/logging';
 import {Miner} from '../src/miner';
+import { MiningStats } from '../src/mining-stats';
 import {QueueProcessing} from '../src/queue-processing';
 import {doWork} from '../src/runner';
 import {Subgraph} from '../src/subgraph';
@@ -24,6 +25,7 @@ async function main() {
     const zkProver = new ZKProver();
     const batchProcessing = new BatchProcessing();
     const queueProcessing = new QueueProcessing();
+    const miningStats = new MiningStats();
 
     log('Setting up work interval');
     setInterval(async () => {
@@ -34,8 +36,11 @@ async function main() {
             subgraph,
             batchProcessing,
             queueProcessing,
+            miningStats,
         );
         log('Work sequence completed. Waiting for next interval.');
+        miningStats.printMetrics();
+        miningStats.writeToFile();
     }, Number(process.env.INTERVAL) * 1000);
 
     log('Main process initiated.');
