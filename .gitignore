@@ -1,6 +1,7 @@
-node_modules
-src/types/
+miner-sdk/node_modules
+miner-sdk/src/types/
+miner-sdk/.env
 yarn-error.log
-.env
+
 .vscode/settings.json
 .DS_Store

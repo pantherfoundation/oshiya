@@ -1,0 +1,7 @@
+{
+  "name": "@panther-miner/web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Panther Tech Team",
+  "license": "MIT"
+}

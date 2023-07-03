@@ -1,49 +1,15 @@
 {
-  "name": "miner-client",
+  "name": "panther-miner",
   "version": "0.0.1",
+  "main": "index.js",
   "repository": "git@gitlab.com:pantherprotocol/tech-team/miner-client.git",
-  "author": "pycckuu <is.markelov@gmail.com>",
+  "author": "Panther Tech Team",
   "license": "MIT",
-  "scripts": {
-    "lint": "eslint '**/*.ts'",
-    "lint:fix": "eslint --fix '**/*.ts'",
-    "test": "jest",
-    "start": "ts-node scripts/run.ts"
-  },
-  "dependencies": {
-    "axios": "^1.4.0",
-    "big-integer": "^1.6.51",
-    "circomlibjs": "^0.0.8",
-    "dotenv": "^16.3.1",
-    "ethers": "^5.5.1",
-    "lodash": "^4.17.21",
-    "snarkjs": "^0.4.10",
-    "ts-node": "^10.9.1",
-    "yargs": "^17.7.2"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.3.5",
-    "@types/jest": "^29.5.2",
-    "@types/lodash": "^4.14.195",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^20.3.2",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
-    "chai": "^4.3.7",
-    "eslint": "^8.43.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-prettier": "^4.2.1",
-    "jest": "^29.5.0",
-    "merkletreejs": "^0.3.10",
-    "prettier": "^2.8.8",
-    "ts-jest": "^29.1.0",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.5"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.ts?$": "ts-jest"
-    }
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "sdk",
+      "web"
+    ]
   }
 }
