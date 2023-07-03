@@ -1,6 +1,12 @@
 node_modules
-src/types/
-yarn-error.log
-.env
+
+
+sdk/node_modules
+sdk/src/types/
+sdk/.env
+
+web-client/node_modules
+
 .vscode/settings.json
 .DS_Store
+yarn-error.log

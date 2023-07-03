@@ -18,7 +18,7 @@ emit_types() {
         --allowJs \
         --skipLibCheck \
         --outdir $outdir \
-        node_modules/$module/{,**/}*.js
+        ../node_modules/$module/{,**/}*.js
 
     if [[ -e $outdir/main.d.ts ]]; then
         echo mv $outdir/{main,index}.d.ts

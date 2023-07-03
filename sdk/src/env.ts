@@ -1,6 +1,6 @@
-import { Wallet } from 'ethers';
+import {Wallet} from 'ethers';
 
-import { EnvVariables } from './types';
+import {EnvVariables} from './types';
 
 export const requiredVars: Array<keyof EnvVariables> = [
     'INTERVAL',
@@ -10,7 +10,10 @@ export const requiredVars: Array<keyof EnvVariables> = [
     'SUBGRAPH_ID',
 ];
 
-function logEnvVariable(v: keyof EnvVariables | 'MINER_ADDRESS', value: string | number) {
+function logEnvVariable(
+    v: keyof EnvVariables | 'MINER_ADDRESS',
+    value: string | number,
+) {
     console.log(`${v}: ${value}`);
 }
 
@@ -19,7 +22,9 @@ export function parseEnvVariables(env: NodeJS.ProcessEnv): EnvVariables {
 
     for (const varName of requiredVars) {
         if (!env[varName]) {
-            throw new Error(`Required environment variable missing: ${varName}`);
+            throw new Error(
+                `Required environment variable missing: ${varName}`,
+            );
         }
 
         if (varName === 'INTERVAL') {
