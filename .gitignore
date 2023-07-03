@@ -1,9 +1,9 @@
 node_modules
 
-
 sdk/node_modules
-sdk/src/types/
+sdk/src/types
 sdk/.env
+sdk/lib
 
 web-client/node_modules
 
