@@ -6,6 +6,7 @@ sdk/.env
 sdk/lib
 
 web-client/node_modules
+web-client/build
 
 .vscode/settings.json
 .DS_Store

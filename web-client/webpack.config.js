@@ -49,7 +49,10 @@ const defaultOptimization = {
 };
 
 module.exports = {
-    entry: ['babel-polyfill', path.resolve(__dirname, './src/index.tsx')],
+    entry: {
+        main: ['babel-polyfill', path.resolve(__dirname, './src/index.tsx')],
+        'miner-sw': './src/services/miner-sw.ts',
+    },
     ...(isProdOrStaging
         ? {}
         : {
@@ -101,21 +104,9 @@ module.exports = {
                 ],
             },
             {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    {
-                        loader: 'style-loader',
-                    },
-                    {
-                        loader: 'css-loader',
-                    },
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            sourceMap: true,
-                        },
-                    },
-                ],
+                test: /\.css$/i,
+                include: path.resolve(__dirname, 'src'),
+                use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
             {
                 test: /\.(png|jpg|jpeg|gif|ico)$/,
