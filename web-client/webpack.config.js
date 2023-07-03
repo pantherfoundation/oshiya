@@ -30,22 +30,7 @@ const babelOptions = {
 };
 
 const defaultOptimization = {
-    splitChunks: {
-        cacheGroups: {
-            // Move reactjs packages into its own file `vendor-react.js`
-            reactVendor: {
-                test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
-                name: 'vendor-react',
-                chunks: 'all',
-            },
-            // Move the `circomlibjs` package into its own file `circomlib.js` -> Will be cached
-            circomlibjs: {
-                test: /[\\/]node_modules[\\/]circomlibjs[\\/]/,
-                name: 'circomlib',
-                chunks: 'all',
-            },
-        },
-    },
+    runtimeChunk: 'single',
 };
 
 module.exports = {
@@ -94,10 +79,7 @@ module.exports = {
                         options: babelOptions,
                     },
                 ],
-                include: [
-                    path.resolve(__dirname, './src'),
-                    path.resolve(__dirname, './tests'),
-                ],
+                include: [path.resolve(__dirname, './src')],
                 exclude: [
                     path.resolve(__dirname, './build'),
                     path.resolve(__dirname, './node_modules/'),

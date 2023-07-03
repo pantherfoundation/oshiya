@@ -1,3 +1,4 @@
+import MinerClientParams from 'components/MinerClientParams';
 import Button from 'components/widgets/Button';
 import React, {useEffect, useState} from 'react';
 
@@ -27,9 +28,7 @@ const App = () => {
                     : 'Panther Miner Client'}
             </h1>
 
-            <div>
-                <Button>Start</Button>
-            </div>
+            <MinerClientParams />
         </div>
     );
 };
