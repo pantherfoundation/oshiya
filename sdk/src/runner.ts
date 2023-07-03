@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import {ethers} from 'ethers';
+
 import {BatchProcessing} from './batch-processing';
 import {log} from './logging';
 import {Miner} from './miner';
 import {MinerTree} from './miner-tree';
+import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
 import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
 import {ZKProver} from './zk-prover';
@@ -68,32 +71,47 @@ export async function doWork(
     subgraph: Subgraph,
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
+    miningStats: MiningStats,
 ): Promise<void> {
-    log('Checking and updating inserted batches.');
-    await batchProcessing.checkInsertedBatchesAndUpdateMinerTree(subgraph);
-
-    log('Checking BusTree root.');
-    const currentRoot = await miner.getBusTreeRoot();
-    if (currentRoot !== batchProcessing.tree.root) {
-        log(
-            `BusTree root ${batchProcessing.tree.root} is not up-to-date with smart contract ${currentRoot}. Please wait for synchronization`,
-        );
-        return;
-    }
-
-    log('Fetching and handling queue and UTXOs.');
-    const queueAndUtxos = await queueProcessing.fetchAndHandleQueueAndUtxos(
-        miner,
-        subgraph,
-    );
-    if (!queueAndUtxos) {
-        return;
-    }
-
     try {
+        logAndCount('Checking and updating inserted batches.', miningStats);
+        await batchProcessing.checkInsertedBatchesAndUpdateMinerTree(subgraph);
+
+        logAndCount('Checking BusTree root.', miningStats);
+        const currentRoot = await miner.getBusTreeRoot();
+        if (currentRoot !== batchProcessing.tree.root) {
+            logAndCount(
+                'BusTree root is not up-to-date. Wait for sync',
+                miningStats,
+            );
+            log(
+                `BusTree root ${batchProcessing.tree.root} is not up-to-date with smart contract ${currentRoot}. Please wait for synchronization`,
+            );
+            return;
+        }
+
+        logAndCount('Fetching and handling queue and UTXOs.', miningStats);
+        const queueAndUtxos = await queueProcessing.fetchAndHandleQueueAndUtxos(
+            miner,
+            subgraph,
+        );
+        if (!queueAndUtxos) {
+            logAndCount('No queue and UTXOs found', miningStats);
+            return;
+        }
+        addToListAndCount(
+            'utxos in queue',
+            queueAndUtxos.utxos.length,
+            miningStats,
+        );
+        addToListAndCount(
+            'reward for queue',
+            Number(ethers.utils.formatEther(queueAndUtxos.queue.reward)),
+            miningStats,
+        );
+
         log('Preparing and submitting proof.');
         const copyOfTree = batchProcessing.tree.copy();
-
         const proofInputs = await prepareProof(
             queueProcessing,
             miner,
@@ -101,12 +119,27 @@ export async function doWork(
             queueAndUtxos.utxos,
         );
         const proof = await generateProof(zkProver, proofInputs);
+        logAndCount('Generated proof', miningStats);
         await submitProof(miner, proof, proofInputs, queueAndUtxos);
+        logAndCount('Submitted proof', miningStats);
 
         batchProcessing.tree = copyOfTree;
         log('Proof submitted');
         log(`New BusTree root: ${batchProcessing.tree.root}`);
-    } catch (e) {
+        logAndCount('Mining success', miningStats);
+        addToListAndCount(
+            'Mined reward',
+            Number(ethers.utils.formatEther(queueAndUtxos.queue.reward)),
+            miningStats,
+        );
+        addToListAndCount(
+            'Mined utxos',
+            queueAndUtxos.utxos.length,
+            miningStats,
+        );
+    } catch (e: any) {
         log(`Error: ${e}`);
+        miningStats.addToListMetric(`Mining error: ${e.message}`, 1);
     }
 }
+

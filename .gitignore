@@ -10,3 +10,4 @@ web-client/node_modules
 .vscode/settings.json
 .DS_Store
 yarn-error.log
+sdk/stats.json
