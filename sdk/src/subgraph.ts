@@ -6,9 +6,7 @@ import axios from 'axios';
 import {
     BusBatchOnboardedEvent,
     BranchFilledEvent,
-    BusQueueOpenedEvent,
     UtxoBusQueuedEvent,
-    GroupedUtxoBusQueued,
 } from './types';
 
 // Helper to generate GraphQL queries
@@ -36,36 +34,6 @@ async function requestGraph(url: string, query: string): Promise<any> {
     }
 
     return response.data.data;
-}
-
-// Group and sort UTXOs by Queue ID
-function groupAndSortUTXOsByQueueID(array: UtxoBusQueuedEvent[]): any {
-    const grouped = array.reduce(
-        (r: GroupedUtxoBusQueued, a: UtxoBusQueuedEvent) => {
-            r[a.queueId] = [...(r[a.queueId] || []), a];
-            return r;
-        },
-        {},
-    );
-
-    // Sort elements in each group by utxoIndexInBatch
-    Object.values(grouped).forEach(arr =>
-        arr.sort(
-            (a: UtxoBusQueuedEvent, b: UtxoBusQueuedEvent) =>
-                a.utxoIndexInBatch - b.utxoIndexInBatch,
-        ),
-    );
-
-    return grouped;
-}
-
-// Parse and map UtxoBusQueuedEvent data
-function parseUtxoBusQueuedEvent(data: any): UtxoBusQueuedEvent[] {
-    return data.utxoBusQueueds.map((u: UtxoBusQueuedEvent) => ({
-        ...u,
-        queueId: Number(u.queueId),
-        utxoIndexInBatch: Number(u.utxoIndexInBatch),
-    }));
 }
 
 export class Subgraph {
@@ -96,7 +64,7 @@ export class Subgraph {
     }
 
     public async getOnboardedBatches(
-        startingBatchIndex: number,
+        startingBatchIndex: number = 0,
     ): Promise<BusBatchOnboardedEvent[]> {
         const minLeftLeafIndex = startingBatchIndex << 6;
         const data = await this.fetchFromSubgraph(
@@ -107,6 +75,8 @@ export class Subgraph {
                 'leftLeafIndexInBusTree',
                 'busTreeNewRoot',
                 'busBranchNewRoot',
+                'blockNumber',
+                'queueId',
             ],
             `where: {leftLeafIndexInBusTree_gte: ${minLeftLeafIndex}}, first: 1000`,
         );
@@ -117,36 +87,16 @@ export class Subgraph {
         }));
     }
 
-    public async getBusQueueOpened(): Promise<any> {
-        const data = await this.fetchFromSubgraph(
-            'busQueueOpeneds',
-            ['queueId'],
-            'where: {isOnboarded: false}',
-        );
-        const openedQueueIds = data.busQueueOpeneds.map(
-            (b: BusQueueOpenedEvent) => b.queueId,
-        );
-
-        const queuedData = await this.fetchFromSubgraph(
-            'utxoBusQueueds',
-            ['utxo', 'queueId', 'utxoIndexInBatch'],
-            `where: {queueId_in: [${openedQueueIds.join(', ')}]}`,
-        );
-        const utxoBusQueueds = parseUtxoBusQueuedEvent(queuedData);
-
-        return groupAndSortUTXOsByQueueID(utxoBusQueueds);
-    }
-
-    public async getUtxosForQueueId(queueId: number): Promise<any> {
+    public async getOldestBlockNumber(notQueueIds: number[]): Promise<number> {
         const data = await this.fetchFromSubgraph(
             'utxoBusQueueds',
-            ['utxo', 'utxoIndexInBatch', 'queueId'],
-            `where: {queueId: ${queueId}}`,
+            ['blockNumber'],
+            `where: { queueId_not_in: [${notQueueIds.join(', ')}] }`,
         );
 
-        return parseUtxoBusQueuedEvent(data).sort(
-            (a: UtxoBusQueuedEvent, b: UtxoBusQueuedEvent) =>
-                a.utxoIndexInBatch - b.utxoIndexInBatch,
+        const blockNumbers = data.utxoBusQueueds.map(
+            (u: UtxoBusQueuedEvent) => u.blockNumber,
         );
+        return Math.min(...blockNumbers);
     }
 }

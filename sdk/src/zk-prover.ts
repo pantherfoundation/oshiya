@@ -2,17 +2,14 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
 import assert from 'assert';
-import {readFileSync} from 'fs';
-import {join} from 'path';
 
 import {groth16} from 'snarkjs';
-import {ProofInputs} from 'types';
 
+import {ProofInputs} from './types';
 import verificationKey from './wasm/VK_pantherBusTreeUpdater.json';
-import witnessCalculator from './wasm/witness_calculator';
 
 export class ZKProver {
-    private readonly verificationKey: Object;
+    private readonly verificationKey: any;
 
     constructor(
         private readonly wasmFilePath: string,

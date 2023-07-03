@@ -18,6 +18,7 @@ export type BranchFilledEvent = {
 };
 
 export type BusBatchOnboardedEvent = {
+    queueId: bigint;
     batchRoot: bigint;
     numUtxosInBatch: number;
     leftLeafIndexInBusTree: number;
@@ -25,6 +26,11 @@ export type BusBatchOnboardedEvent = {
     busBranchNewRoot: string;
     batchIndex: number;
     branchIndex: number;
+    blockNumber?: number;
+};
+
+export type BusBatchOnboardedEventRecord = BusBatchOnboardedEvent & {
+    isInserted: boolean;
 };
 
 export type BusQueueOpenedEvent = {
@@ -36,7 +42,10 @@ export type UtxoBusQueuedEvent = {
     utxo: string;
     queueId: number;
     utxoIndexInBatch: number;
+    blockNumber?: number;
 };
+
+export type UtxoBusQueuedEventRecord = UtxoBusQueuedEvent;
 
 export type SortedBatches = {
     roots: bigint[];

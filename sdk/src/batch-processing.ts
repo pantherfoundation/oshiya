@@ -1,35 +1,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import {EventScanner} from './event-scanner';
 import {LogFn, log as defaultLog} from './logging';
+import {MemCache} from './mem-cache';
 import {MinerTree} from './miner-tree';
-import {Subgraph} from './subgraph';
 import {BusBatchOnboardedEvent} from './types';
 
 export class BatchProcessing {
-    tree: MinerTree;
     private log: LogFn;
 
-    constructor(log: LogFn = defaultLog) {
-        this.tree = new MinerTree();
+    constructor(
+        public tree: MinerTree,
+        private scanner: EventScanner,
+        private db: MemCache,
+        log: LogFn = defaultLog,
+    ) {
+        this.scanner = scanner;
         this.log = log;
-    }
-
-    async fetchOnboardedBatches(
-        subgraph: Subgraph,
-        lastInsertedBatchIndex: number,
-    ): Promise<Array<any>> {
-        try {
-            this.log(
-                `Fetching new batches from index ${lastInsertedBatchIndex + 1}`,
-            );
-            return await subgraph.getOnboardedBatches(
-                lastInsertedBatchIndex + 1,
-            );
-        } catch (e) {
-            this.log(`Error: fetching new batches ${e}`);
-            return [];
-        }
     }
 
     insertBatchesAndLog(filledBatches: Array<BusBatchOnboardedEvent>): void {
@@ -41,25 +29,28 @@ export class BatchProcessing {
                 `Inserting batch with leftLeafIndexInBusTree: ${batch.leftLeafIndexInBusTree}`,
             );
             this.tree.insertBatch(batch);
+            this.db.setBusBatchIsOnboarded(Number(batch.queueId));
+            console.log('batch inserted, new root: ', this.tree.root);
         });
         this.log(
             `Inserted ${filledBatches.length} new batches. New BusTree root: ${this.tree.root}`,
         );
     }
 
-    async checkInsertedBatchesAndUpdateMinerTree(subgraph: Subgraph) {
-        this.log('Checking for new inserted batches in the Subgraph.');
-        const newFilledBatches = await this.fetchOnboardedBatches(
-            subgraph,
-            this.tree.leafInd,
-        );
+    async checkInsertedBatchesAndUpdateMinerTree() {
+        await this.scanner.scan();
+        const newFilledBatches = this.db.getNotInsertedBusBatches();
         if (newFilledBatches && newFilledBatches.length > 0) {
             this.log(
                 `Found ${newFilledBatches.length} new batches. Inserting them.`,
             );
             this.insertBatchesAndLog(newFilledBatches);
         } else {
-            this.log('There are no new inserted batches yet in the Subgraph.');
+            this.log('There are no new inserted batches yet.');
         }
+    }
+
+    setBusBatchIsOnboarded(queueId: number) {
+        this.db.setBusBatchIsOnboarded(queueId);
     }
 }

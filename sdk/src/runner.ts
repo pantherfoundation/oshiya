@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
 import {BatchProcessing} from './batch-processing';
-import {LogFn, log as defaultLog} from './logging';
+import {log} from './logging';
 import {Miner} from './miner';
 import {MinerTree} from './miner-tree';
 import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
 import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
+import {BusBatchOnboardedEvent} from './types';
 import {ZKProver} from './zk-prover';
 
 async function prepareProof(
@@ -15,7 +16,6 @@ async function prepareProof(
     miner: Miner,
     copyOfTree: MinerTree,
     utxos: any,
-    log: LogFn = defaultLog,
 ): Promise<any> {
     try {
         return queueProcessing.prepareProofForQueue(
@@ -32,13 +32,12 @@ async function prepareProof(
 async function generateProof(
     zkProver: ZKProver,
     proofInputs: any,
-    log: LogFn = defaultLog,
 ): Promise<any> {
     try {
         log('Generating proof');
         return await zkProver.generateProof(proofInputs);
     } catch (e) {
-        log(`Error while generating proof: ${e}`);
+        log('Error while generating proof');
         throw e;
     }
 }
@@ -48,7 +47,6 @@ async function submitProof(
     proof: any,
     proofInputs: any,
     queueAndUtxos: any,
-    log: LogFn = defaultLog,
 ): Promise<void> {
     try {
         log('Submitting proof');
@@ -66,26 +64,59 @@ async function submitProof(
     }
 }
 
+export async function coldStart(
+    subgraphId: string,
+): Promise<[MinerTree, number, number[]]> {
+    log('Starting cold start');
+    const [tree, filledBatches] = await initializeMinerTree(subgraphId);
+    const insertedQueueIds = filledBatches.map(batch => Number(batch.queueId));
+    const lastScannedBlock = await getOldestBlockNumber(
+        subgraphId,
+        insertedQueueIds,
+    );
+
+    log(`Cold start finished. Last scanned block: ${lastScannedBlock}`);
+    return [tree, lastScannedBlock, insertedQueueIds];
+}
+
+// Initializes MinerTree and returns sorted onboarded batches
+async function initializeMinerTree(
+    subgraphId: string,
+): Promise<[MinerTree, BusBatchOnboardedEvent[]]> {
+    const tree = new MinerTree();
+    const subgraph = new Subgraph(subgraphId);
+    const filledBatches = await subgraph.getOnboardedBatches();
+    filledBatches.sort((a, b) => a.batchIndex - b.batchIndex);
+    filledBatches.forEach(batch => tree.insertBatch(batch));
+    return [tree, filledBatches];
+}
+
+// Gets oldest block number excluding inserted queueIds
+async function getOldestBlockNumber(
+    subgraphId: string,
+    insertedQueueIds: number[],
+): Promise<number> {
+    const subgraph = new Subgraph(subgraphId);
+    return subgraph.getOldestBlockNumber(insertedQueueIds);
+}
+
 export async function doWork(
     miner: Miner,
     zkProver: ZKProver,
-    subgraph: Subgraph,
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
-    log: LogFn = defaultLog,
 ): Promise<void> {
     try {
         logAndCount('Checking and updating inserted batches.', miningStats);
-        await batchProcessing.checkInsertedBatchesAndUpdateMinerTree(subgraph);
+        await batchProcessing.checkInsertedBatchesAndUpdateMinerTree();
 
-        logAndCount('Checking BusTree root.', miningStats, log);
+        logAndCount('Checking BusTree root.', miningStats);
         const currentRoot = await miner.getBusTreeRoot();
         if (currentRoot !== batchProcessing.tree.root) {
             logAndCount(
                 'BusTree root is not up-to-date. Wait for sync',
                 miningStats,
-                log,
             );
             log(
                 `BusTree root ${batchProcessing.tree.root} is not up-to-date with smart contract ${currentRoot}. Please wait for synchronization`,
@@ -93,13 +124,11 @@ export async function doWork(
             return;
         }
 
-        logAndCount('Fetching and handling queue and UTXOs.', miningStats, log);
-        const queueAndUtxos = await queueProcessing.fetchAndHandleQueueAndUtxos(
-            miner,
-            subgraph,
-        );
+        logAndCount('Fetching and handling queue and UTXOs.', miningStats);
+        const queueAndUtxos =
+            await queueProcessing.fetchAndHandleQueueAndUtxos();
         if (!queueAndUtxos) {
-            logAndCount('No queue and UTXOs found', miningStats, log);
+            logAndCount('No queue and UTXOs found', miningStats);
             return;
         }
         addToListAndCount(
@@ -122,14 +151,15 @@ export async function doWork(
             queueAndUtxos.utxos,
         );
         const proof = await generateProof(zkProver, proofInputs);
-        logAndCount('Generated proof', miningStats, log);
+        logAndCount('Generated proof', miningStats);
         await submitProof(miner, proof, proofInputs, queueAndUtxos);
-        logAndCount('Submitted proof', miningStats, log);
+        logAndCount('Submitted proof', miningStats);
 
         batchProcessing.tree = copyOfTree;
+        batchProcessing.setBusBatchIsOnboarded(queueAndUtxos.queue.queueId);
         log('Proof submitted');
         log(`New BusTree root: ${batchProcessing.tree.root}`);
-        logAndCount('Mining success', miningStats, log);
+        logAndCount('Mining success', miningStats);
         addToListAndCount(
             'Mined reward',
             Number(queueAndUtxos.queue.reward),
