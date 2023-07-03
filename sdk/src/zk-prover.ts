@@ -14,7 +14,7 @@ import witnessCalculator from './wasm/witness_calculator';
 export class ZKProver {
     private readonly wasmBuffer: Buffer;
     private readonly provKeyPath: string;
-    private readonly verifKeyPath: any;
+    private readonly verificationKey: any;
 
     constructor() {
         this.wasmBuffer = readFileSync(
@@ -24,7 +24,7 @@ export class ZKProver {
             __dirname,
             './wasm/pantherBusTreeUpdater_final.zkey',
         );
-        this.verifKeyPath = verificationKey;
+        this.verificationKey = verificationKey;
     }
 
     public async generateProof(pInput: ProofInputs): Promise<any> {
@@ -40,7 +40,7 @@ export class ZKProver {
 
         assert(
             await groth16.verify(
-                this.verifKeyPath,
+                this.verificationKey,
                 publicSignals,
                 lProof,
                 null,

@@ -1,24 +1,22 @@
 import MinerClientParams from 'components/MinerClientParams';
-import Button from 'components/widgets/Button';
-import React, {useEffect, useState} from 'react';
-
-import {swManager} from 'services/sw-manager';
+import React, {useState} from 'react';
+import './services/worker-manager';
 
 const App = () => {
     const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
-        setLoading(true);
-        swManager
-            .init()
-            .then(() => {
-                setLoading(false);
-            })
-            .catch((err: Error) => {
-                setLoading(false);
-                alert(`SW Error: ${err.message}`);
-            });
-    }, []);
+    // useEffect(() => {
+    //     setLoading(true);
+    //     swManager
+    //         .init()
+    //         .then(() => {
+    //             setLoading(false);
+    //         })
+    //         .catch((err: Error) => {
+    //             setLoading(false);
+    //             alert(`SW Error: ${err.message}`);
+    //         });
+    // }, []);
 
     return (
         <div className="max-w-screen-lg mx-auto">

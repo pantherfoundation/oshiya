@@ -36,7 +36,7 @@ const defaultOptimization = {
 module.exports = {
     entry: {
         main: ['babel-polyfill', path.resolve(__dirname, './src/index.tsx')],
-        'miner-sw': './src/services/miner-sw.ts',
+        // 'miner-worker': './src/services/miner-worker.ts',
     },
     ...(isProdOrStaging
         ? {}
@@ -61,6 +61,7 @@ module.exports = {
             buffer: require.resolve('buffer/'),
             process: require.resolve('process'),
             fs: false,
+            readline: false,
         },
     },
     output: {
@@ -71,6 +72,20 @@ module.exports = {
     target: 'web',
     module: {
         rules: [
+            {
+                test: /\.worker\.ts$/i,
+                use: [
+                    {
+                        loader: 'worker-loader',
+                    },
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env'],
+                        },
+                    },
+                ],
+            },
             {
                 test: /\.ts|\.tsx?$/,
                 use: [

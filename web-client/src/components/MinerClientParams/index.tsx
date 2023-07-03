@@ -15,7 +15,15 @@ const MinerClientParams = () => {
             </div>
 
             <div className="mt-4">
-                <Button>Start Mining</Button>
+                <Button
+                    onClick={() => {
+                        // swManager.sendMessage({
+                        //     type: SwMessage.StartMining,
+                        // });
+                    }}
+                >
+                    Start Mining
+                </Button>
             </div>
         </div>
     );
