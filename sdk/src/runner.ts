@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
 import {BatchProcessing} from './batch-processing';
-import {log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
 import {MinerTree} from './miner-tree';
 import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
@@ -15,6 +15,7 @@ async function prepareProof(
     miner: Miner,
     copyOfTree: MinerTree,
     utxos: any,
+    log: LogFn = defaultLog,
 ): Promise<any> {
     try {
         return queueProcessing.prepareProofForQueue(
@@ -31,6 +32,7 @@ async function prepareProof(
 async function generateProof(
     zkProver: ZKProver,
     proofInputs: any,
+    log: LogFn = defaultLog,
 ): Promise<any> {
     try {
         log('Generating proof');
@@ -46,6 +48,7 @@ async function submitProof(
     proof: any,
     proofInputs: any,
     queueAndUtxos: any,
+    log: LogFn = defaultLog,
 ): Promise<void> {
     try {
         log('Submitting proof');
@@ -70,37 +73,33 @@ export async function doWork(
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
-    logger: (msg: string) => void = log,
+    log: LogFn = defaultLog,
 ): Promise<void> {
     try {
         logAndCount('Checking and updating inserted batches.', miningStats);
         await batchProcessing.checkInsertedBatchesAndUpdateMinerTree(subgraph);
 
-        logAndCount('Checking BusTree root.', miningStats, logger);
+        logAndCount('Checking BusTree root.', miningStats, log);
         const currentRoot = await miner.getBusTreeRoot();
         if (currentRoot !== batchProcessing.tree.root) {
             logAndCount(
                 'BusTree root is not up-to-date. Wait for sync',
                 miningStats,
-                logger,
+                log,
             );
-            logger(
+            log(
                 `BusTree root ${batchProcessing.tree.root} is not up-to-date with smart contract ${currentRoot}. Please wait for synchronization`,
             );
             return;
         }
 
-        logAndCount(
-            'Fetching and handling queue and UTXOs.',
-            miningStats,
-            logger,
-        );
+        logAndCount('Fetching and handling queue and UTXOs.', miningStats, log);
         const queueAndUtxos = await queueProcessing.fetchAndHandleQueueAndUtxos(
             miner,
             subgraph,
         );
         if (!queueAndUtxos) {
-            logAndCount('No queue and UTXOs found', miningStats, logger);
+            logAndCount('No queue and UTXOs found', miningStats, log);
             return;
         }
         addToListAndCount(
@@ -114,7 +113,7 @@ export async function doWork(
             miningStats,
         );
 
-        logger('Preparing and submitting proof.');
+        log('Preparing and submitting proof.');
         const copyOfTree = batchProcessing.tree.copy();
         const proofInputs = await prepareProof(
             queueProcessing,
@@ -123,14 +122,14 @@ export async function doWork(
             queueAndUtxos.utxos,
         );
         const proof = await generateProof(zkProver, proofInputs);
-        logAndCount('Generated proof', miningStats, logger);
+        logAndCount('Generated proof', miningStats, log);
         await submitProof(miner, proof, proofInputs, queueAndUtxos);
-        logAndCount('Submitted proof', miningStats, logger);
+        logAndCount('Submitted proof', miningStats, log);
 
         batchProcessing.tree = copyOfTree;
-        logger('Proof submitted');
-        logger(`New BusTree root: ${batchProcessing.tree.root}`);
-        logAndCount('Mining success', miningStats, logger);
+        log('Proof submitted');
+        log(`New BusTree root: ${batchProcessing.tree.root}`);
+        logAndCount('Mining success', miningStats, log);
         addToListAndCount(
             'Mined reward',
             Number(queueAndUtxos.queue.reward),
@@ -142,7 +141,7 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
-        logger(`Error: ${e}`);
+        log(`Error: ${e}`);
         miningStats.addToListMetric(`Mining error: ${e.message}`, 1);
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
 import {
     MinerTree,
@@ -12,26 +12,32 @@ import {Subgraph} from './subgraph';
 import {UtxoBusQueuedEvent, ProofInputs} from './types';
 
 export class QueueProcessing {
+    private log: LogFn;
+
+    constructor(log: LogFn = defaultLog) {
+        this.log = log;
+    }
+
     async fetchAndHandleQueueAndUtxos(miner: Miner, subgraph: Subgraph) {
-        log('Fetching the queue with the highest reward.');
+        this.log('Fetching the queue with the highest reward.');
         const queue = await miner.getHighestRewardQueue();
         if (!queue) {
-            log('No queue found yet');
+            this.log('No queue found yet');
             return null;
         }
 
-        log(
+        this.log(
             `Found the highest reward queue. ID: ${queue.queueId}, Reward: ${queue.reward}`,
         );
 
-        log(`Fetching UTXOs for queue id: ${queue.queueId}`);
+        this.log(`Fetching UTXOs for queue id: ${queue.queueId}`);
         const utxos = await subgraph.getUtxosForQueueId(queue.queueId);
         if (!utxos || utxos.length === 0) {
-            log('No UTXOs found for that queue');
+            this.log('No UTXOs found for that queue');
             return null;
         }
 
-        log(`Fetched ${utxos.length} UTXOs for the queue`);
+        this.log(`Fetched ${utxos.length} UTXOs for the queue`);
         return {queue, utxos};
     }
 
@@ -40,7 +46,7 @@ export class QueueProcessing {
         copyOfTree: MinerTree,
         utxos: UtxoBusQueuedEvent[],
     ): ProofInputs {
-        log('Preparing proof for queue');
+        this.log('Preparing proof for queue');
         const batchRoot = calculateBatchRoot(utxos.map(u => u.utxo));
         copyOfTree.insertLeaf(batchRoot);
         const queueRoot = calculateDegenerateTreeRoot(utxos.map(u => u.utxo));
@@ -59,7 +65,7 @@ export class QueueProcessing {
             magicalConstraint: '0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00',
         };
 
-        log('Proof for queue prepared');
+        this.log('Proof for queue prepared');
         return proofInputs;
     }
 }
