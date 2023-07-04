@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {ethers} from 'ethers';
-
 import {BatchProcessing} from './batch-processing';
 import {log} from './logging';
 import {Miner} from './miner';
@@ -106,7 +104,7 @@ export async function doWork(
         );
         addToListAndCount(
             'reward for queue',
-            Number(ethers.utils.formatEther(queueAndUtxos.queue.reward)),
+            Number(queueAndUtxos.queue.reward),
             miningStats,
         );
 
@@ -129,7 +127,7 @@ export async function doWork(
         logAndCount('Mining success', miningStats);
         addToListAndCount(
             'Mined reward',
-            Number(ethers.utils.formatEther(queueAndUtxos.queue.reward)),
+            Number(queueAndUtxos.queue.reward),
             miningStats,
         );
         addToListAndCount(
@@ -142,4 +140,3 @@ export async function doWork(
         miningStats.addToListMetric(`Mining error: ${e.message}`, 1);
     }
 }
-
