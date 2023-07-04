@@ -2,25 +2,30 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
 import {LogFn, log as defaultLog} from './logging';
+import {MemCache} from './mem-cache';
 import {Miner} from './miner';
 import {
     MinerTree,
     calculateDegenerateTreeRoot,
     calculateBatchRoot,
 } from './miner-tree';
-import {Subgraph} from './subgraph';
 import {UtxoBusQueuedEvent, ProofInputs} from './types';
 
 export class QueueProcessing {
     private log: LogFn;
 
-    constructor(log: LogFn = defaultLog) {
+    constructor(
+        private miner: Miner,
+        private db: MemCache,
+        log: LogFn = defaultLog,
+    ) {
         this.log = log;
     }
 
-    async fetchAndHandleQueueAndUtxos(miner: Miner, subgraph: Subgraph) {
+    async fetchAndHandleQueueAndUtxos() {
         this.log('Fetching the queue with the highest reward.');
-        const queue = await miner.getHighestRewardQueue();
+
+        const queue = await this.miner.getHighestRewardQueue();
         if (!queue) {
             this.log('No queue found yet');
             return null;
@@ -31,7 +36,8 @@ export class QueueProcessing {
         );
 
         this.log(`Fetching UTXOs for queue id: ${queue.queueId}`);
-        const utxos = await subgraph.getUtxosForQueueId(queue.queueId);
+        const utxos = this.db.getUtxosForQueueId(queue.queueId);
+
         if (!utxos || utxos.length === 0) {
             this.log('No UTXOs found for that queue');
             return null;

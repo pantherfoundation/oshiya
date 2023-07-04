@@ -1,22 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {BusTree} from 'contract/bus-tree-types';
-import {Contract, ContractReceipt, Wallet, getDefaultProvider} from 'ethers';
+import {ContractReceipt, Wallet} from 'ethers';
 
-import BUS_ABI from './contract/bus-tree-abi.json';
+import {BusTree} from './contract/bus-tree-types';
+import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
-
-function initializeBusContract(
-    wallet: Wallet,
-    rpcURL: string,
-    contractAddress: string,
-): BusTree {
-    const provider = getDefaultProvider(rpcURL);
-    const signer = wallet.connect(provider);
-    return new Contract(contractAddress, BUS_ABI, signer) as BusTree;
-}
 
 export class Miner {
     public readonly address: string;
