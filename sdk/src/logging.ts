@@ -6,4 +6,4 @@ export function log(message: string): void {
     console.log(`${timestamp}: ${message}`);
 }
 
-export type Logger = (message: string) => void;
+export type LogFn = (message: string) => void;

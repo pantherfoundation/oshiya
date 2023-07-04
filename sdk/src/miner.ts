@@ -5,7 +5,7 @@ import {BusTree} from 'contract/bus-tree-types';
 import {Contract, ContractReceipt, Wallet, getDefaultProvider} from 'ethers';
 
 import BUS_ABI from './contract/bus-tree-abi.json';
-import {log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
 function initializeBusContract(
@@ -21,11 +21,13 @@ function initializeBusContract(
 export class Miner {
     public readonly address: string;
     private readonly busContract: BusTree;
+    private log: LogFn;
 
     constructor(
         privKey: string,
         private readonly rpcURL: string,
         private readonly contractAddress: string,
+        log: LogFn = defaultLog,
     ) {
         const wallet = new Wallet(privKey);
         this.address = wallet.address;
@@ -34,6 +36,7 @@ export class Miner {
             rpcURL,
             contractAddress,
         );
+        this.log = log;
     }
 
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
@@ -65,7 +68,7 @@ export class Miner {
             newBranchRoot,
             proof,
         );
-        log(`Submitted tx ${tx.hash}`);
+        this.log(`Submitted tx ${tx.hash}`);
         return await tx.wait();
     }
 

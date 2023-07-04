@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import {Logger, log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 
 export class MiningStats {
     private countMetrics: Record<string, number> = {};
@@ -65,9 +65,9 @@ export class MiningStats {
 export function logAndCount(
     messageAndMetric: string,
     miningStats: MiningStats,
-    logger: Logger = log,
+    log: LogFn = defaultLog,
 ) {
-    logger(messageAndMetric);
+    log(messageAndMetric);
     miningStats.incrementCountMetric(messageAndMetric, 1);
 }
 
