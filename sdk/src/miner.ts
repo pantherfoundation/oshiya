@@ -21,12 +21,13 @@ function initializeBusContract(
 export class Miner {
     public readonly address: string;
     private readonly busContract: BusTree;
+
     private log: LogFn;
 
     constructor(
         privKey: string,
-        private readonly rpcURL: string,
-        private readonly contractAddress: string,
+        rpcURL: string,
+        contractAddress: string,
         log: LogFn = defaultLog,
     ) {
         const wallet = new Wallet(privKey);

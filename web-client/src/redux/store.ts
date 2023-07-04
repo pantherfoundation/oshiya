@@ -1,10 +1,12 @@
 import {} from 'redux';
 import {configureStore, combineReducers} from '@reduxjs/toolkit';
 import {logsReducer} from './slices/logs';
+import {statsReducer} from './slices/stats';
 import {TypedUseSelectorHook, useSelector} from 'react-redux';
 
 const rootReducer = combineReducers({
     logs: logsReducer,
+    stats: statsReducer,
 });
 
 export const store = configureStore({

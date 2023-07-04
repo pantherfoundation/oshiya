@@ -17,11 +17,11 @@ const MinerLogs: React.FC<EmptyObject> = () => {
     if (logs.length === 0) return null;
 
     return (
-        <div className="w-full ">
-            <h1 className="text-center mt-5 text-4xl">Logs</h1>
+        <div className="w-full">
+            <h1 className="text-center mt-9 text-6xl">Logs</h1>
             <div
                 ref={container}
-                className="bg-gray-800 text-white py-4 px-4 rounded-lg mt-5 font-mono text-sm h-96 overflow-y-scroll"
+                className="bg-gray-800 text-white py-4 px-4 rounded-lg mt-5 font-mono text-sm h-96 overflow-y-scroll w-full"
             >
                 {logs.map((log, idx) => (
                     <p key={idx}>{log}</p>

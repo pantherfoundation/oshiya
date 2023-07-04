@@ -1,6 +1,7 @@
 export enum WorkerMessage {
     StartMining = 'start-mining',
     Logs = 'logs',
+    Stats = 'stats',
 }
 
 export type MinerClientParams = {

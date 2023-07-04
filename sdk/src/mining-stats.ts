@@ -3,8 +3,8 @@ import fs from 'fs';
 import {LogFn, log as defaultLog} from './logging';
 
 export class MiningStats {
-    private countMetrics: Record<string, number> = {};
-    private listMetrics: Record<string, Array<number>> = {};
+    public readonly countMetrics: Record<string, number> = {};
+    public readonly listMetrics: Record<string, Array<number>> = {};
 
     incrementCountMetric(key: string, value: number = 1) {
         if (!this.countMetrics[key]) {
