@@ -8,6 +8,9 @@ sdk/lib
 web-client/node_modules
 web-client/build
 web-client/.env
+web-client/public/*.wasm
+web-client/public/*.zkey
+
 
 .vscode/settings.json
 .DS_Store

@@ -36,7 +36,7 @@ async function generateProof(
         log('Generating proof');
         return await zkProver.generateProof(proofInputs);
     } catch (e) {
-        log('Error while generating proof');
+        log(`Error while generating proof: ${e}`);
         throw e;
     }
 }
@@ -70,31 +70,37 @@ export async function doWork(
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
+    logger: (msg: string) => void = log,
 ): Promise<void> {
     try {
         logAndCount('Checking and updating inserted batches.', miningStats);
         await batchProcessing.checkInsertedBatchesAndUpdateMinerTree(subgraph);
 
-        logAndCount('Checking BusTree root.', miningStats);
+        logAndCount('Checking BusTree root.', miningStats, logger);
         const currentRoot = await miner.getBusTreeRoot();
         if (currentRoot !== batchProcessing.tree.root) {
             logAndCount(
                 'BusTree root is not up-to-date. Wait for sync',
                 miningStats,
+                logger,
             );
-            log(
+            logger(
                 `BusTree root ${batchProcessing.tree.root} is not up-to-date with smart contract ${currentRoot}. Please wait for synchronization`,
             );
             return;
         }
 
-        logAndCount('Fetching and handling queue and UTXOs.', miningStats);
+        logAndCount(
+            'Fetching and handling queue and UTXOs.',
+            miningStats,
+            logger,
+        );
         const queueAndUtxos = await queueProcessing.fetchAndHandleQueueAndUtxos(
             miner,
             subgraph,
         );
         if (!queueAndUtxos) {
-            logAndCount('No queue and UTXOs found', miningStats);
+            logAndCount('No queue and UTXOs found', miningStats, logger);
             return;
         }
         addToListAndCount(
@@ -108,7 +114,7 @@ export async function doWork(
             miningStats,
         );
 
-        log('Preparing and submitting proof.');
+        logger('Preparing and submitting proof.');
         const copyOfTree = batchProcessing.tree.copy();
         const proofInputs = await prepareProof(
             queueProcessing,
@@ -117,14 +123,14 @@ export async function doWork(
             queueAndUtxos.utxos,
         );
         const proof = await generateProof(zkProver, proofInputs);
-        logAndCount('Generated proof', miningStats);
+        logAndCount('Generated proof', miningStats, logger);
         await submitProof(miner, proof, proofInputs, queueAndUtxos);
-        logAndCount('Submitted proof', miningStats);
+        logAndCount('Submitted proof', miningStats, logger);
 
         batchProcessing.tree = copyOfTree;
-        log('Proof submitted');
-        log(`New BusTree root: ${batchProcessing.tree.root}`);
-        logAndCount('Mining success', miningStats);
+        logger('Proof submitted');
+        logger(`New BusTree root: ${batchProcessing.tree.root}`);
+        logAndCount('Mining success', miningStats, logger);
         addToListAndCount(
             'Mined reward',
             Number(queueAndUtxos.queue.reward),
@@ -136,7 +142,7 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
-        log(`Error: ${e}`);
+        logger(`Error: ${e}`);
         miningStats.addToListMetric(`Mining error: ${e.message}`, 1);
     }
 }

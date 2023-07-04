@@ -9,7 +9,7 @@ import {BatchProcessing} from '../src/batch-processing';
 import {parseEnvVariables, logSettings} from '../src/env';
 import {log} from '../src/logging';
 import {Miner} from '../src/miner';
-import { MiningStats } from '../src/mining-stats';
+import {MiningStats} from '../src/mining-stats';
 import {QueueProcessing} from '../src/queue-processing';
 import {doWork} from '../src/runner';
 import {Subgraph} from '../src/subgraph';
@@ -22,7 +22,10 @@ async function main() {
     logSettings(env);
     const miner = new Miner(env.PRIVATE_KEY, env.RPC_URL, env.CONTRACT_ADDRESS);
     const subgraph = new Subgraph(env.SUBGRAPH_ID);
-    const zkProver = new ZKProver();
+    const zkProver = new ZKProver(
+        'src/wasm/pantherBusTreeUpdater.wasm',
+        'src/wasm/pantherBusTreeUpdater_final.zkey',
+    );
     const batchProcessing = new BatchProcessing();
     const queueProcessing = new QueueProcessing();
     const miningStats = new MiningStats();
