@@ -46,6 +46,11 @@ self.addEventListener('message', async event => {
                 notify,
             );
             miningStats.printMetrics();
+            self.postMessage({
+                type: WorkerMessage.Stats,
+                countMetrics: miningStats.countMetrics,
+                listMetrics: miningStats.listMetrics,
+            });
             await sleep(interval * 1000);
         }
     }
