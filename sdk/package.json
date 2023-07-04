@@ -11,12 +11,18 @@
     "lint:fix": "eslint --fix '**/*.ts'",
     "test": "jest",
     "start": "ts-node scripts/run.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "gen:queues": "ts-node tests/generate-queues.ts"
   },
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts"
   ],
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "dependencies": {
     "axios": "^1.4.0",
     "big-integer": "^1.6.51",

@@ -12,35 +12,26 @@ import verificationKey from './wasm/VK_pantherBusTreeUpdater.json';
 import witnessCalculator from './wasm/witness_calculator';
 
 export class ZKProver {
-    private readonly wasmBuffer: Buffer;
-    private readonly provKeyPath: string;
-    private readonly verifKeyPath: any;
+    private readonly verificationKey: Object;
 
-    constructor() {
-        this.wasmBuffer = readFileSync(
-            join(__dirname, './wasm/pantherBusTreeUpdater.wasm'),
-        );
-        this.provKeyPath = join(
-            __dirname,
-            './wasm/pantherBusTreeUpdater_final.zkey',
-        );
-        this.verifKeyPath = verificationKey;
+    constructor(
+        private readonly wasmFilePath: string,
+        private readonly zKeyPath: string,
+    ) {
+        this.verificationKey = verificationKey;
     }
 
     public async generateProof(pInput: ProofInputs): Promise<any> {
-        const witness = await witnessCalculator(this.wasmBuffer).then(
-            async (witCalc: any) => witCalc.calculateWTNSBin(pInput, 0),
-        );
-
-        const {proof: lProof, publicSignals} = await groth16.prove(
-            this.provKeyPath,
-            witness,
+        const {proof: lProof, publicSignals} = await groth16.fullProve(
+            pInput,
+            this.wasmFilePath,
+            this.zKeyPath,
             null,
         );
 
         assert(
             await groth16.verify(
-                this.verifKeyPath,
+                this.verificationKey,
                 publicSignals,
                 lProof,
                 null,

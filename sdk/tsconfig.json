@@ -17,8 +17,7 @@
         "node_modules/*",
         "scripts/*",
         "src/*",
-        "src/types/*",
-        "types/*"
+        "src/types/*"
       ]
     },
     "sourceMap": true,

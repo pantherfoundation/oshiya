@@ -6,6 +6,10 @@
   "author": "Panther Tech Team",
   "license": "SEE LICENSE IN ./LICENSE",
   "private": true,
+  "scripts": {
+    "build:sdk": "yarn workspace @panther-miner/sdk build",
+    "start:web": "yarn workspace @panther-miner/web-client start"
+  },
   "workspaces": {
     "packages": [
       "sdk",

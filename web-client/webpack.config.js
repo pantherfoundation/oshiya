@@ -30,26 +30,14 @@ const babelOptions = {
 };
 
 const defaultOptimization = {
-    splitChunks: {
-        cacheGroups: {
-            // Move reactjs packages into its own file `vendor-react.js`
-            reactVendor: {
-                test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
-                name: 'vendor-react',
-                chunks: 'all',
-            },
-            // Move the `circomlibjs` package into its own file `circomlib.js` -> Will be cached
-            circomlibjs: {
-                test: /[\\/]node_modules[\\/]circomlibjs[\\/]/,
-                name: 'circomlib',
-                chunks: 'all',
-            },
-        },
-    },
+    runtimeChunk: 'single',
 };
 
 module.exports = {
-    entry: ['babel-polyfill', path.resolve(__dirname, './src/index.tsx')],
+    entry: {
+        main: ['babel-polyfill', path.resolve(__dirname, './src/index.tsx')],
+        // 'miner-worker': './src/services/miner-worker.ts',
+    },
     ...(isProdOrStaging
         ? {}
         : {
@@ -73,6 +61,7 @@ module.exports = {
             buffer: require.resolve('buffer/'),
             process: require.resolve('process'),
             fs: false,
+            readline: false,
         },
     },
     output: {
@@ -84,6 +73,20 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.worker\.ts$/i,
+                use: [
+                    {
+                        loader: 'worker-loader',
+                    },
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env'],
+                        },
+                    },
+                ],
+            },
+            {
                 test: /\.ts|\.tsx?$/,
                 use: [
                     {
@@ -91,31 +94,16 @@ module.exports = {
                         options: babelOptions,
                     },
                 ],
-                include: [
-                    path.resolve(__dirname, './src'),
-                    path.resolve(__dirname, './tests'),
-                ],
+                include: [path.resolve(__dirname, './src')],
                 exclude: [
                     path.resolve(__dirname, './build'),
                     path.resolve(__dirname, './node_modules/'),
                 ],
             },
             {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    {
-                        loader: 'style-loader',
-                    },
-                    {
-                        loader: 'css-loader',
-                    },
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            sourceMap: true,
-                        },
-                    },
-                ],
+                test: /\.css$/i,
+                include: path.resolve(__dirname, 'src'),
+                use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
             {
                 test: /\.(png|jpg|jpeg|gif|ico)$/,
