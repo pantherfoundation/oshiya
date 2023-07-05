@@ -8,6 +8,30 @@ import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
+function selectHighestN<T>(
+    array: Array<T>,
+    valueKey: keyof T,
+    timeKey: keyof T,
+    N: number,
+): Array<T> {
+    return [...array]
+        .sort((a: T, b: T) => {
+            if ((b[valueKey] as any) === (a[valueKey] as any)) {
+                // If the values are the same, prefer the older block.
+                return Number(a[timeKey]) - Number(b[timeKey]);
+            } else {
+                // Otherwise, prefer the higher value.
+                return Number(b[valueKey]) - Number(a[valueKey]);
+            }
+        })
+        .slice(0, N);
+}
+
+function getRandomElement<T>(array: Array<T>): T {
+    const randomIndex = Math.floor(Math.random() * array.length);
+    return array[randomIndex];
+}
+
 export class Miner {
     public readonly address: string;
     private readonly busContract: BusTree;
@@ -31,16 +55,9 @@ export class Miner {
     }
 
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
-        let queues = await this.busContract.getOldestPendingQueues(255);
-        queues = queues.filter(
-            (q: BusQueueRecStructOutput) => Number(q.nUtxos) == 64,
-        );
-
-        return queues.reduce(
-            (max: BusQueueRecStructOutput, q: BusQueueRecStructOutput) =>
-                max.reward.gt(q.reward) ? max : q,
-            queues[0],
-        );
+        const queues = await this.busContract.getOldestPendingQueues(255);
+        const topFive = selectHighestN(queues, 'reward', 'firstUtxoBlock', 5);
+        return getRandomElement(topFive);
     }
 
     public async mineQueue(
