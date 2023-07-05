@@ -153,7 +153,7 @@ module.exports = {
         new webpack.optimize.AggressiveMergingPlugin(),
         new WebpackPwaManifest({
             short_name: 'Panther Miner',
-            name: 'Panther Minter Client',
+            name: 'Panther Miner Client',
             icons: [
                 {
                     src: path.resolve('./public/logo.png'),
