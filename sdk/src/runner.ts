@@ -39,7 +39,11 @@ async function generateProof(
         log('Generating proof');
         return await zkProver.generateProof(proofInputs);
     } catch (e) {
-        log('Error while generating proof');
+        log(
+            `Error while generating proof: ${
+                e instanceof Error ? e.message : e
+            }`,
+        );
         throw e;
     }
 }
@@ -114,11 +118,7 @@ export async function doWork(
 ): Promise<void> {
     try {
         await miner.simulateAddUtxosToBusQueue();
-        logAndCount(
-            'Inserted UTXOs.',
-            miningStats,
-            log,
-        );
+        logAndCount('Inserted UTXOs.', miningStats, log);
         logAndCount(
             'Checking and updating inserted batches.',
             miningStats,
