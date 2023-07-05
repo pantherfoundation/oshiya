@@ -9,23 +9,10 @@ import {
     UtxoBusQueuedEvent,
 } from './types';
 
-// Helper to generate GraphQL queries
-function generateQuery(
-    name: string,
-    fields: string[],
-    options: string = '',
-): string {
-    return `
-        query{
-            ${name}(${options}) {
-                ${fields.join('\n')}
-            }
-        }
-    `;
-}
+const PAGINATION_WINDOW_SIZE = 1000;
 
-// Handles all Graph API requests
-async function requestGraph(url: string, query: string): Promise<any> {
+// Handles all Subgraph API requests
+async function requestSubgraph(url: string, query: string): Promise<any> {
     const response = await axios.post(url, {query});
 
     if (response.data.errors?.[0]?.message || response.status !== 200) {
@@ -36,6 +23,25 @@ async function requestGraph(url: string, query: string): Promise<any> {
     return response.data.data;
 }
 
+// Subgraph GraphQL Query Builder
+class QueryBuilder {
+    constructor(
+        private fields: string[],
+        private queryName: string,
+        private options: string = '',
+    ) {}
+
+    build(): string {
+        return `
+        query{
+            ${this.queryName}(${this.options}) {
+                ${this.fields.join('\n')}
+            }
+        }
+        `;
+    }
+}
+
 export class Subgraph {
     private readonly url: string;
 
@@ -43,57 +49,75 @@ export class Subgraph {
         this.url = `https://api.thegraph.com/subgraphs/id/${id}`;
     }
 
-    private async fetchFromSubgraph(
-        queryName: string,
-        fields: string[],
-        filter: string = '',
-    ): Promise<any> {
-        return await requestGraph(
-            this.url,
-            generateQuery(queryName, fields, filter),
-        );
+    private async fetchFromSubgraph(queryBuilder: QueryBuilder): Promise<any> {
+        return await requestSubgraph(this.url, queryBuilder.build());
     }
 
     public async getFilledBranches(): Promise<BranchFilledEvent[]> {
-        const data = await this.fetchFromSubgraph(
-            'busBranchFilleds',
+        const queryBuilder = new QueryBuilder(
             ['branchIndex', 'busBranchFinalRoot'],
+            'busBranchFilleds',
             'first: 1000',
         );
+
+        const data = await this.fetchFromSubgraph(queryBuilder);
         return data.busBranchFilleds;
     }
 
     public async getOnboardedBatches(
         startingBatchIndex: number = 0,
     ): Promise<BusBatchOnboardedEvent[]> {
+        let fetchedData: BusBatchOnboardedEvent[] = [];
         const minLeftLeafIndex = startingBatchIndex << 6;
-        const data = await this.fetchFromSubgraph(
-            'busBatchOnboardeds',
-            [
-                'batchRoot',
-                'numUtxosInBatch',
-                'leftLeafIndexInBusTree',
-                'busTreeNewRoot',
-                'busBranchNewRoot',
-                'blockNumber',
-                'queueId',
-            ],
-            `where: {leftLeafIndexInBusTree_gte: ${minLeftLeafIndex}}, first: 1000`,
-        );
-        return data.busBatchOnboardeds.map((b: BusBatchOnboardedEvent) => ({
-            ...b,
-            batchIndex: Number(b.leftLeafIndexInBusTree >> 6),
-            branchIndex: Number(b.leftLeafIndexInBusTree >> 16),
-        }));
+        let lastId: string | null = null;
+
+        while (true) {
+            const afterFilter = lastId ? `, after: "${lastId}"` : '';
+
+            const queryBuilder = new QueryBuilder(
+                [
+                    'id',
+                    'batchRoot',
+                    'numUtxosInBatch',
+                    'leftLeafIndexInBusTree',
+                    'busTreeNewRoot',
+                    'busBranchNewRoot',
+                    'blockNumber',
+                    'queueId',
+                ],
+                'busBatchOnboardeds',
+                `where: {leftLeafIndexInBusTree_gte: ${minLeftLeafIndex}}, first: ${PAGINATION_WINDOW_SIZE}${afterFilter}`,
+            );
+
+            const data = await this.fetchFromSubgraph(queryBuilder);
+            const onboardedBatches = data.busBatchOnboardeds.map(
+                (b: BusBatchOnboardedEvent) => ({
+                    ...b,
+                    batchIndex: Number(b.leftLeafIndexInBusTree >> 6),
+                    branchIndex: Number(b.leftLeafIndexInBusTree >> 16),
+                }),
+            );
+
+            fetchedData = [...fetchedData, ...onboardedBatches];
+
+            if (onboardedBatches.length < PAGINATION_WINDOW_SIZE) {
+                break;
+            } else {
+                lastId = onboardedBatches[onboardedBatches.length - 1].id;
+            }
+        }
+
+        return fetchedData;
     }
 
     public async getOldestBlockNumber(notQueueIds: number[]): Promise<number> {
-        const data = await this.fetchFromSubgraph(
-            'utxoBusQueueds',
+        const queryBuilder = new QueryBuilder(
             ['blockNumber'],
+            'utxoBusQueueds',
             `where: { queueId_not_in: [${notQueueIds.join(', ')}] }`,
         );
 
+        const data = await this.fetchFromSubgraph(queryBuilder);
         const blockNumbers = data.utxoBusQueueds.map(
             (u: UtxoBusQueuedEvent) => u.blockNumber,
         );
