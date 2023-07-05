@@ -106,7 +106,6 @@ const MinerClientParamsForm = () => {
                         workerManager.startMining(params);
                         dispatch(updateMinerParams(params));
                         dispatch(getZkpBalance(params));
-                        dispatch(updateMiningStatus(true));
                     }}
                 >
                     Start Mining
@@ -117,7 +116,6 @@ const MinerClientParamsForm = () => {
                     variant="error"
                     onClick={() => {
                         workerManager.stopMining();
-                        dispatch(updateMiningStatus(false));
                     }}
                 >
                     Stop Mining

@@ -30,6 +30,15 @@ export function useMessageHandler() {
                 );
                 dispatch(getZkpBalance(minerParams));
             }
+
+            if (
+                isMessageOf<{isMining: boolean}>(
+                    WorkerMessage.MiningStatus,
+                    event.data,
+                )
+            ) {
+                dispatch(updateMiningStatus(event.data.isMining));
+            }
         });
     }, [minerParams]);
 }

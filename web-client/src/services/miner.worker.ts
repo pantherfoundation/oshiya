@@ -30,6 +30,7 @@ const globalContext = {
 self.addEventListener('message', async event => {
     if (isMessageOf<MinerClientParams>(WorkerMessage.StartMining, event.data)) {
         globalContext.isMining = true;
+        self.postMessage({type: WorkerMessage.MiningStatus, isMining: true});
 
         const {privateKey, rpcUrl, contractAddr, subgraphId, interval} =
             event.data;
@@ -71,13 +72,20 @@ self.addEventListener('message', async event => {
                 listMetrics: miningStats.listMetrics,
             });
 
-            if (!globalContext.isMining) break;
+            if (!globalContext.isMining) {
+                self.postMessage({
+                    type: WorkerMessage.MiningStatus,
+                    isMining: false,
+                });
+                break;
+            }
             await sleep(interval * 1000);
         }
     }
 
-    if (isMessageOf(WorkerMessage.StopMining, event.data))
+    if (isMessageOf(WorkerMessage.StopMining, event.data)) {
         globalContext.isMining = false;
+    }
 });
 
 export default TypedWorker;
