@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
 export class MemCache {
@@ -9,14 +9,16 @@ export class MemCache {
         {};
     private utxos: Record<number, UtxoBusQueuedEventRecord[]> = {};
     private insertedQueueIds: Set<number> = new Set();
+    private log: LogFn;
 
-    constructor(insertedQueueIds: number[] = []) {
+    constructor(insertedQueueIds: number[] = [], log: LogFn = defaultLog) {
         insertedQueueIds.forEach(id => this.insertedQueueIds.add(id));
+        this.log = log;
     }
 
     storeEventBusBatchOnBoarded(rec: BusBatchOnboardedEventRecord): void {
         this.busBatchOnBoarded[rec.queueId.toString()] = rec;
-        log(`Stored BusBatch ${rec.batchIndex} in MemCache`);
+        this.log(`Stored BusBatch ${rec.batchIndex} in MemCache`);
     }
 
     storeEventUtxoBusQueued(rec: UtxoBusQueuedEventRecord): void {
@@ -24,12 +26,12 @@ export class MemCache {
             this.utxos[rec.queueId] = [];
         }
         this.utxos[rec.queueId].push(rec);
-        log(`Stored utxo for queueId ${rec.queueId} in MemCache`);
+        this.log(`Stored utxo for queueId ${rec.queueId} in MemCache`);
     }
 
     setBusBatchIsOnboarded(queueId: number): void {
         this.insertedQueueIds.add(queueId);
-        log(`Updated BusBatch record ${queueId} in MemCache`);
+        this.log(`Updated BusBatch record ${queueId} in MemCache`);
     }
 
     getUtxosForQueueId(queueId: number): UtxoBusQueuedEventRecord[] {

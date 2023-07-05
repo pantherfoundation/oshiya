@@ -3,7 +3,7 @@
 
 import {BusTree} from './contract/bus-tree-types';
 import {initializeReadOnlyBusContract} from './contracts';
-import {log} from './logging';
+import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
@@ -13,16 +13,21 @@ export class EventScanner {
     private contract: BusTree;
     private eventTopics: any;
     private db: MemCache;
+    private lastScannedBlock: number;
+    private log: LogFn;
 
     constructor(
         rpcEndpoint: string,
         address: string,
-        private lastScannedBlock: number,
+        lastScannedBlock: number,
         db: MemCache,
+        log: LogFn = defaultLog,
     ) {
         this.contract = initializeReadOnlyBusContract(rpcEndpoint, address);
         this.eventTopics = this.buildEventTopics();
         this.db = db;
+        this.lastScannedBlock = lastScannedBlock;
+        this.log = log;
     }
 
     private buildEventTopics() {
@@ -34,22 +39,33 @@ export class EventScanner {
     public async scan(): Promise<void> {
         try {
             const currentBlock = await this.contract.provider.getBlockNumber();
-            for (let i = this.lastScannedBlock; i < currentBlock; i += PAGE_SIZE) {
+            for (
+                let i = this.lastScannedBlock;
+                i < currentBlock;
+                i += PAGE_SIZE
+            ) {
                 const endBlock = Math.min(i + PAGE_SIZE, currentBlock);
-                log(`Scanning block range ${i} - ${endBlock}`);
+                this.log(`Scanning block range ${i} - ${endBlock}`);
                 await this.scanBlockRangeAndSave(i, endBlock);
                 this.lastScannedBlock = endBlock;
             }
         } catch (error: any) {
-            log(`Error scanning: ${error.message}`);
+            this.log(`Error scanning: ${error.message}`);
         }
     }
 
-    private async scanBlockRangeAndSave(fromBlock: number, toBlock: number): Promise<void> {
+    private async scanBlockRangeAndSave(
+        fromBlock: number,
+        toBlock: number,
+    ): Promise<void> {
         const filter = this.buildFilter();
 
         try {
-            const logs = await this.contract.queryFilter(filter, fromBlock, toBlock);
+            const logs = await this.contract.queryFilter(
+                filter,
+                fromBlock,
+                toBlock,
+            );
 
             for (const log of logs) {
                 const parsed = this.contract.interface.parseLog(log);
@@ -62,7 +78,7 @@ export class EventScanner {
                 }
             }
         } catch (error: any) {
-            log(`Error scanning block range: ${error.message}`);
+            this.log(`Error scanning block range: ${error.message}`);
         }
     }
 
@@ -73,8 +89,11 @@ export class EventScanner {
         }));
     }
 
-    private mapBusBatchOnboardedEvent(parsedLog: any): BusBatchOnboardedEventRecord {
-        const leftLeafIndexInBusTree = parsedLog.args.leftLeafIndexInBusTree.toNumber();
+    private mapBusBatchOnboardedEvent(
+        parsedLog: any,
+    ): BusBatchOnboardedEventRecord {
+        const leftLeafIndexInBusTree =
+            parsedLog.args.leftLeafIndexInBusTree.toNumber();
         return {
             queueId: BigInt(parsedLog.args.queueId),
             batchRoot: BigInt(parsedLog.args.batchRoot),

@@ -1,4 +1,4 @@
-import {TypedWorker, isMessageOf} from 'utils/worker';
+import {TypedWorker} from 'utils/worker';
 import MinerWorker from './miner.worker';
 import {MinerClientParams, WorkerMessage} from 'types/worker';
 
@@ -14,7 +14,12 @@ export class WorkerManager {
     }
 
     public handleMessages(handler: (event: MessageEvent) => void): void {
-        this.worker.addEventListener('message', handler);
+        if (this.worker === null) return;
+        this.worker.onmessage = handler;
+    }
+
+    public stopMining(): void {
+        this.worker.postMessage({type: WorkerMessage.StopMining});
     }
 }
 

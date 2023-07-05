@@ -1,5 +1,6 @@
 export enum WorkerMessage {
     StartMining = 'start-mining',
+    StopMining = 'stop-mining',
     Logs = 'logs',
     Stats = 'stats',
 }
