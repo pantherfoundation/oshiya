@@ -9,7 +9,9 @@
     "check-types": "tsc --project tsconfig.json --noEmit --isolatedModules false",
     "build:dev": "yarn check-types && TARGET_ENV=development  webpack --mode=development --env development",
     "build:staging": "yarn check-types && TARGET_ENV=staging yarn webpack --mode=production --env production --progress",
-    "build:prod": "yarn check-types && TARGET_ENV=production webpack --mode=production --env production --progress"
+    "build:prod": "yarn check-types && TARGET_ENV=production webpack --mode=production --env production --progress",
+    "bundle:wasm": "cp -R ../sdk/src/wasm/* ./build/",
+    "deploy:ipfs:infura": "ts-node scripts/deploy-ipfs.ts --infura"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
@@ -37,6 +39,7 @@
     "dotenv-webpack": "^8.0.1",
     "html-webpack-plugin": "^5.5.3",
     "https-browserify": "^1.0.0",
+    "ipfs-http-client": "^56.0.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "postcss": "^8.4.24",
     "postcss-loader": "^7.3.3",
@@ -50,6 +53,7 @@
     "tailwindcss": "^3.3.2",
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.4.4",
+    "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.0.1",
     "typescript": "^5.1.6",
     "webpack": "^5.88.1",
@@ -60,6 +64,7 @@
   },
   "dependencies": {
     "@panther-miner/sdk": "0.0.1",
+    "axios": "^1.4.0",
     "classnames": "^2.3.2",
     "core-js": "^3.31.0",
     "ethers": "^5.5.1",
