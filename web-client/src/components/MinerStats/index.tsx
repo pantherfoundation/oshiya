@@ -20,8 +20,9 @@ const MinerStats = () => {
                             className="flex flex-row justify-between align-middle mb-2"
                             key={key}
                         >
-                            <p>{key}</p>
-                            <p className="font-bold">{value}</p>
+                            <p>
+                                <strong>{value}</strong> x {key}
+                            </p>
                         </div>
                     ))}
                 </div>
