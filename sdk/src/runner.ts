@@ -113,6 +113,12 @@ export async function doWork(
     log: LogFn = defaultLog,
 ): Promise<void> {
     try {
+        await miner.simulateAddUtxosToBusQueue();
+        logAndCount(
+            'Inserted UTXOs.',
+            miningStats,
+            log,
+        );
         logAndCount(
             'Checking and updating inserted batches.',
             miningStats,
