@@ -30,7 +30,16 @@ const babelOptions = {
 };
 
 const defaultOptimization = {
-    runtimeChunk: 'single',
+    splitChunks: {
+        cacheGroups: {
+            // Move reactjs packages into its own file `vendor-react.js`
+            reactVendor: {
+                test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
+                name: 'vendor-react',
+                chunks: 'all',
+            },
+        },
+    },
 };
 
 module.exports = {
