@@ -171,7 +171,6 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
-        log(`Error: ${e}`);
-        miningStats.addToListMetric(`Mining error: ${e.message}`, 1);
+        logAndCount(`Mining error: ${e.message}`, miningStats);
     }
 }
