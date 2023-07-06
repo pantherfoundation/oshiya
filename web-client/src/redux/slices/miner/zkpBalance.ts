@@ -4,10 +4,12 @@ import {env} from 'services/env';
 import {MinerClientParams} from 'types/worker';
 
 const initialState: {
-    value: string;
+    zkp: string;
+    matic: string;
     status: 'idle' | 'loading' | 'error';
 } = {
-    value: '0',
+    zkp: '0',
+    matic: '0',
     status: 'idle',
 };
 
@@ -18,6 +20,8 @@ export const getZkpBalance = createAsyncThunk(
 
         const provider = getDefaultProvider(rpcUrl);
         const wallet = new Wallet(privateKey, provider);
+
+        const matic = await wallet.getBalance();
 
         const contract = new Contract(
             env.ZKP_TOKEN_ADDRESS,
@@ -45,8 +49,8 @@ export const getZkpBalance = createAsyncThunk(
             provider,
         );
 
-        const result: BigNumber = await contract.balanceOf(wallet.address);
-        return result.toString();
+        const zkp: BigNumber = await contract.balanceOf(wallet.address);
+        return [zkp.toString(), matic.toString()];
     },
 );
 
@@ -60,7 +64,9 @@ const zkpBalanceSlice = createSlice({
                 state.status = 'loading';
             })
             .addCase(getZkpBalance.fulfilled, (state, action) => {
-                state.value = action.payload;
+                const [zkp, matic] = action.payload;
+                state.zkp = zkp;
+                state.matic = matic;
                 state.status = 'idle';
             })
             .addCase(getZkpBalance.rejected, state => {
