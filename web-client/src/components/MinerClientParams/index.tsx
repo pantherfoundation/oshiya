@@ -14,15 +14,14 @@ import {AppDispatch, useAppSelector} from 'redux/store';
 const MinerClientParamsForm = () => {
     const dispatch = useDispatch<AppDispatch>();
     const isMining = useAppSelector(state => state.miner.isMining);
-    const [state, setState] = useState<
-        Omit<MinerClientParams, 'interval'> & {interval: string}
-    >({
+    const [state, setState] = useState<{
+        interval: string;
+        privateKey: string;
+        rpcUrl: string;
+    }>({
         interval: '20',
         privateKey: '',
         rpcUrl: env.RPC_URL || '',
-        contractAddr: env.CONTRACT_ADDRESS || '',
-        subgraphId: env.SUBGRAPH_ID || '',
-        zkpTokenAddr: env.ZKP_TOKEN_ADDRESS || '',
     });
 
     function updateStateHandler(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -46,14 +45,6 @@ const MinerClientParamsForm = () => {
 
         if (!isValidHttpUrl(state.rpcUrl))
             return [false, 'Invalid RPC URL. Must be a valid HTTP(s) URL'];
-
-        if (!ethers.utils.isAddress(state.contractAddr))
-            return [false, 'Invalid contract address.'];
-
-        if (!state.subgraphId) return [false, 'Subgraph ID field is required.'];
-
-        if (!state.zkpTokenAddr)
-            return [false, 'ZKP Token Adreess field is required.'];
 
         return [true, null];
     }
@@ -80,24 +71,6 @@ const MinerClientParamsForm = () => {
                     name="rpcUrl"
                     onChange={updateStateHandler}
                 />
-                <Input
-                    label="Contract Address"
-                    value={state.contractAddr}
-                    name="contractAddr"
-                    onChange={updateStateHandler}
-                />
-                <Input
-                    label="Subgraph ID"
-                    value={state.subgraphId}
-                    name="subgraphId"
-                    onChange={updateStateHandler}
-                />
-                <Input
-                    label="ZKP Token Address"
-                    value={state.zkpTokenAddr}
-                    name="zkpTokenAddr"
-                    onChange={updateStateHandler}
-                />
             </div>
 
             <div className="mt-4 flex space-x-4">
@@ -108,9 +81,10 @@ const MinerClientParamsForm = () => {
                         if (!isValid) return alert(error);
 
                         const interval = Number(state.interval);
-                        const params: MinerClientParams = {
-                            ...state,
+                        const params = {
                             interval,
+                            privateKey: state.privateKey,
+                            rpcUrl: state.rpcUrl,
                         };
                         workerManager.startMining(params);
                         dispatch(updateMinerParams(params));

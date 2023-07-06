@@ -5,9 +5,26 @@ import fs from 'fs';
 
 import {LogFn, log as defaultLog} from './logging';
 
+export type Stats = {
+    generatedProof: number;
+    submittedProof: number;
+    miningSuccess: number;
+    miningError: number;
+};
+
 export class MiningStats {
     public readonly countMetrics: Record<string, number> = {};
     public readonly listMetrics: Record<string, Array<number>> = {};
+    public readonly stats: Stats = {
+        generatedProof: 0,
+        submittedProof: 0,
+        miningSuccess: 0,
+        miningError: 0,
+    };
+
+    public incrementStats(key: keyof Stats): void {
+        this.stats[key] += 1;
+    }
 
     incrementCountMetric(key: string, value: number = 1) {
         if (!this.countMetrics[key]) {
