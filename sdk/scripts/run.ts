@@ -4,7 +4,6 @@
 import {join, resolve} from 'path';
 
 import dotenv from 'dotenv';
-import {ethers} from 'ethers';
 
 import {BatchProcessing} from '../src/batch-processing';
 import {parseEnvVariables, logSettings} from '../src/env';
@@ -16,8 +15,6 @@ import {QueueProcessing} from '../src/queue-processing';
 import {coldStart, doWork} from '../src/runner';
 import {ZKProver} from '../src/zk-prover';
 import {MemCache} from '../src/mem-cache';
-import {Subgraph} from '../src/subgraph';
-import {MinerTree} from '../src/miner-tree';
 
 dotenv.config({path: resolve(__dirname, '../.env')});
 

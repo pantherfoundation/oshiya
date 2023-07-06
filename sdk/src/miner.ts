@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {ContractReceipt, Wallet} from 'ethers';
+import {ContractReceipt, Wallet, utils} from 'ethers';
 
 import {bigintToBytes32} from './bigint-conversions';
 import {BusTree} from './contract/bus-tree-types';
@@ -12,6 +12,9 @@ import {BusQueueRecStructOutput} from './types';
 const SNARK_FIELD_SIZE = BigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617',
 );
+
+const REWARD_PER_UTXO = 0.1;
+const MIN_REWARD = utils.parseEther('2');
 
 function selectHighestN<T>(
     array: Array<T>,
@@ -74,7 +77,15 @@ export class Miner {
 
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
         const queues = await this.busContract.getOldestPendingQueues(255);
-        const topFive = selectHighestN(queues, 'reward', 'firstUtxoBlock', 5);
+        const queuesWithMoreThanMinReward = queues.filter(q =>
+            q.reward.gt(MIN_REWARD),
+        );
+        const topFive = selectHighestN(
+            queuesWithMoreThanMinReward,
+            'reward',
+            'firstUtxoBlock',
+            5,
+        );
         return getRandomElement(topFive);
     }
 
@@ -106,7 +117,7 @@ export class Miner {
         }
         const tx = await this.busContract.simulateAddUtxosToBusQueue(
             utxos,
-            numUtxos * 10,
+            utils.parseEther((numUtxos * REWARD_PER_UTXO).toString()),
         );
         this.log(
             `Submitted tx ${tx.hash} for generating ${numUtxos} random utxos`,
