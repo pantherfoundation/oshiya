@@ -14,8 +14,8 @@ const App = () => {
             <h1 className="text-5xl text-center my-5">Panther Miner Client</h1>
             <MinerClientParams />
             <Balance />
-            <MinerStats />
             <MinerLogs />
+            <MinerStats />
         </div>
     );
 };

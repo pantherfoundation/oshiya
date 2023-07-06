@@ -14,7 +14,7 @@ const MinerStats = () => {
             <h1 className="text-center mt-9 text-6xl">Mining Statistics</h1>
 
             {isNoCountMetrics === false && (
-                <div className="max-w-md mx-auto mt-4">
+                <div className="max-w-lg mx-auto mt-4">
                     {Object.entries(countMetrics).map(([key, value]) => (
                         <div
                             className="flex flex-row justify-between align-middle mb-2"
@@ -29,7 +29,7 @@ const MinerStats = () => {
             )}
 
             {isNoListMetrics === false && (
-                <div className="max-w-md mx-auto">
+                <div className="max-w-lg mx-auto">
                     {Object.entries(listMetrics).map(([key, value]) => (
                         <div
                             className="flex flex-row justify-between align-middle"
