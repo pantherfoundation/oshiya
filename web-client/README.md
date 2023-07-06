@@ -2,8 +2,8 @@
 
 ## Deployment
 
-1. Create `.env` file in `web-client/` and environment variables
-   All enviorment variables are optional.
+1. Create `.env` file in `web-client/` and environment variables. All enviorment
+   variables are optional. Take a look at `.env.example` for for reference.
 
     - `CONTRACT_ADDRESS`: Bus tree contract address
     - `INTERVAL`: Mining work interval.
