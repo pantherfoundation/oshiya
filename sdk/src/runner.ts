@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
 import {BatchProcessing} from './batch-processing';
+import {parseTxErrorMessage} from './errors';
 import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
 import {MinerTree} from './miner-tree';
@@ -187,6 +188,6 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
-        logAndCount(`Mining error: ${e.message}`, miningStats);
+        logAndCount(`Mining error: ${parseTxErrorMessage(e)}`, miningStats);
     }
 }
