@@ -13,6 +13,7 @@ import {
 import {MinerClientParams, WorkerMessage} from 'types/worker';
 import {TypedWorker, isMessageOf} from 'utils/worker';
 import {sleep} from 'utils/helpers';
+import {env} from './env';
 
 const globalContext = {
     isMining: false,
@@ -30,22 +31,24 @@ async function handleMining(eventData: MinerClientParams) {
     globalContext.isMining = true;
     self.postMessage({type: WorkerMessage.MiningStatus, isMining: true});
 
-    const {privateKey, rpcUrl, contractAddr, subgraphId, interval} = eventData;
+    const {privateKey, rpcUrl, interval} = eventData;
 
     // Initialize and set up all necessary components for the mining process
     const [tree, lastScannedBlock, insertedQueueIds] = await coldStart(
-        subgraphId,
+        env.SUBGRAPH_ID,
         notify,
     );
     const db = new MemCache(insertedQueueIds, notify);
     const scanner = new EventScanner(
         rpcUrl,
-        contractAddr,
-        lastScannedBlock,
+        env.CONTRACT_ADDRESS,
+        isFinite(lastScannedBlock)
+            ? lastScannedBlock
+            : Number(env.GENESIS_BLOCK_NUMBER),
         db,
         notify,
     );
-    const miner = new Miner(privateKey, rpcUrl, contractAddr, notify);
+    const miner = new Miner(privateKey, rpcUrl, env.CONTRACT_ADDRESS, notify);
     const zkProver = new ZKProver(
         'pantherBusTreeUpdater.wasm',
         'pantherBusTreeUpdater_final.zkey',

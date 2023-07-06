@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {BigNumber, Contract, Wallet, getDefaultProvider} from 'ethers';
+import {env} from 'services/env';
 import {MinerClientParams} from 'types/worker';
 
 const initialState: {
@@ -12,15 +13,14 @@ const initialState: {
 
 export const getZkpBalance = createAsyncThunk(
     'miner/zkp/balance',
-    async ({rpcUrl, privateKey, zkpTokenAddr}: MinerClientParams) => {
-        console.log({rpcUrl, privateKey, zkpTokenAddr});
-        if (!privateKey || !rpcUrl || !zkpTokenAddr) return '0';
+    async ({rpcUrl, privateKey}: MinerClientParams) => {
+        if (!privateKey || !rpcUrl) return '0';
 
         const provider = getDefaultProvider(rpcUrl);
         const wallet = new Wallet(privateKey, provider);
 
         const contract = new Contract(
-            zkpTokenAddr,
+            env.ZKP_TOKEN_ADDRESS,
             [
                 {
                     constant: true,
