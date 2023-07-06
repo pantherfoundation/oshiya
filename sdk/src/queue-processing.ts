@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import {utils} from 'ethers';
+
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {Miner} from './miner';
@@ -8,6 +10,7 @@ import {
     MinerTree,
     calculateDegenerateTreeRoot,
     calculateBatchRoot,
+    fillEmptyUTXOs,
 } from './miner-tree';
 import {UtxoBusQueuedEvent, ProofInputs} from './types';
 
@@ -27,12 +30,14 @@ export class QueueProcessing {
 
         const queue = await this.miner.getHighestRewardQueue();
         if (!queue) {
-            this.log('No queue found yet');
+            this.log('No queue found yet that meets criteria');
             return null;
         }
 
         this.log(
-            `Found the highest reward queue. ID: ${queue.queueId}, Reward: ${queue.reward}`,
+            `Found the highest reward queue. ID: ${
+                queue.queueId
+            }, Reward: ${utils.formatEther(queue.reward)}`,
         );
 
         this.log(`Fetching UTXOs for queue id: ${queue.queueId}`);
@@ -50,12 +55,14 @@ export class QueueProcessing {
     prepareProofForQueue(
         minerAddress: string,
         copyOfTree: MinerTree,
-        utxos: UtxoBusQueuedEvent[],
+        utxoBusQueuedEvents: UtxoBusQueuedEvent[],
     ): ProofInputs {
         this.log('Preparing proof for queue');
-        const batchRoot = calculateBatchRoot(utxos.map(u => u.utxo));
+        const utxos = utxoBusQueuedEvents.map(u => u.utxo);
+        const newLeafs = fillEmptyUTXOs(utxos);
+        const batchRoot = calculateBatchRoot(newLeafs);
         copyOfTree.insertLeaf(batchRoot);
-        const queueRoot = calculateDegenerateTreeRoot(utxos.map(u => u.utxo));
+        const queueRoot = calculateDegenerateTreeRoot(utxos);
 
         const proofInputs: ProofInputs = {
             oldRoot: copyOfTree.prevRoot,
@@ -63,8 +70,8 @@ export class QueueProcessing {
             replacedNodeIndex: copyOfTree.leafInd,
             pathElements: copyOfTree.siblings,
             newLeafsCommitment: queueRoot,
-            nNonEmptyNewLeafs: utxos.length,
-            newLeafs: utxos.map((u: UtxoBusQueuedEvent) => u.utxo),
+            nNonEmptyNewLeafs: utxoBusQueuedEvents.length,
+            newLeafs,
             batchRoot,
             branchRoot: copyOfTree.branchRoot,
             extraInput: minerAddress,

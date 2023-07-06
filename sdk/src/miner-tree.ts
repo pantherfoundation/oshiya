@@ -11,6 +11,9 @@ import {BusBatchOnboardedEvent} from './types';
 const EMPTY_BATCH =
     '0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69';
 
+export const EMPTY_TREE_ROOT =
+    '0x1bdded415724018275c7fcc2f564f64db01b5bbeb06d65700564b05c3c59c9e6';
+
 const ZERO_LEAF =
     '0x0667764c376602b72ef22218e1673c2cc8546201f9a77807570b3e5de137680d';
 
@@ -27,9 +30,9 @@ export class MinerTree {
 
     constructor(depth = 20) {
         this.depth = depth;
-        this.root = '0x0000000';
-        this.prevRoot = '0x0000000';
-        this.branchRoot = '0x0000000';
+        this.root = EMPTY_TREE_ROOT;
+        this.prevRoot = EMPTY_TREE_ROOT;
+        this.branchRoot = bigintToBytes32(0n);
         this.leaf = EMPTY_BATCH;
         this.leafInd = -1;
         this.siblings = Array(this.depth);
@@ -109,9 +112,7 @@ export class MinerTree {
 }
 
 export function calculateBatchRoot(utxos: string[]): string {
-    const emptyLeafsNum = 64 - utxos.length;
-    let leaves = utxos.concat(Array(emptyLeafsNum).fill(ZERO_LEAF));
-
+    let leaves = [...utxos];
     while (leaves.length > 1)
         leaves = Array(leaves.length >> 1)
             .fill(0)
@@ -120,6 +121,11 @@ export function calculateBatchRoot(utxos: string[]): string {
             );
 
     return leaves[0];
+}
+
+export function fillEmptyUTXOs(utxos: string[]): string[] {
+    const emptyLeafsNum = 64 - utxos.length;
+    return utxos.concat(Array(emptyLeafsNum).fill(ZERO_LEAF));
 }
 
 export function calculateDegenerateTreeRoot(utxos: string[]): string {

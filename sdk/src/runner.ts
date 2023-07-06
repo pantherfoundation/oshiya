@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import {utils} from 'ethers';
+
 import {BatchProcessing} from './batch-processing';
+import {bigintToBytes32} from './bigint-conversions';
 import {parseTxErrorMessage} from './errors';
 import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
-import {MinerTree} from './miner-tree';
+import {EMPTY_TREE_ROOT, MinerTree} from './miner-tree';
 import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
 import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
@@ -84,7 +87,9 @@ export async function coldStart(
         insertedQueueIds,
     );
 
-    log(`Cold start finished. Last scanned block: ${lastScannedBlock}`);
+    log(
+        `Cold start finished. Start chain scanning from block ${lastScannedBlock}`,
+    );
     return [tree, lastScannedBlock, insertedQueueIds];
 }
 
@@ -128,7 +133,9 @@ export async function doWork(
         await batchProcessing.checkInsertedBatchesAndUpdateMinerTree();
 
         logAndCount('Checking BusTree root.', miningStats, log);
-        const currentRoot = await miner.getBusTreeRoot();
+        let currentRoot = await miner.getBusTreeRoot();
+        currentRoot =
+            currentRoot === bigintToBytes32(0n) ? EMPTY_TREE_ROOT : currentRoot;
         if (currentRoot !== batchProcessing.tree.root) {
             logAndCount(
                 'BusTree root is not up-to-date. Wait for sync',
@@ -153,8 +160,8 @@ export async function doWork(
             miningStats,
         );
         addToListAndCount(
-            'reward for queue',
-            Number(queueAndUtxos.queue.reward),
+            'reward for queue, ZKP',
+            Number(utils.formatEther(queueAndUtxos.queue.reward)),
             miningStats,
         );
 
@@ -178,8 +185,8 @@ export async function doWork(
         log(`New BusTree root: ${batchProcessing.tree.root}`);
         logAndCount('Mining success', miningStats, log);
         addToListAndCount(
-            'Mined reward',
-            Number(queueAndUtxos.queue.reward),
+            'Mined reward, ZKP',
+            Number(utils.formatEther(queueAndUtxos.queue.reward)),
             miningStats,
         );
         addToListAndCount(
