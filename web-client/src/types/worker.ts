@@ -12,4 +12,5 @@ export type MinerClientParams = {
     rpcUrl: string;
     contractAddr: string;
     subgraphId: string;
+    zkpTokenAddr: string;
 };
