@@ -4,7 +4,7 @@ import {utils} from 'ethers';
 
 const MinerStats = () => {
     const stats = useAppSelector(state => state.stats);
-    const balance = useAppSelector(state => state.miner.zkpBalance.value);
+    const {matic, zkp} = useAppSelector(state => state.miner.zkpBalance);
 
     return (
         <div className="w-full">
@@ -12,8 +12,16 @@ const MinerStats = () => {
 
             <div className="mx-auto mt-4 px-4 max-w-xl">
                 <p className="text-left mb-2">
-                    Balance (reward):{' '}
-                    <strong>{utils.formatEther(balance)} $ZKP</strong>
+                    Balance:
+                    <strong className="inline-block ml-1">
+                        {utils.formatEther(matic)} MATIC
+                    </strong>
+                </p>
+                <p className="text-left mb-2">
+                    Reward:{' '}
+                    <strong className="inline-block ml-1">
+                        {utils.formatEther(zkp)} $ZKP
+                    </strong>
                 </p>
 
                 {[
