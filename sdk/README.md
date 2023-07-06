@@ -82,11 +82,12 @@ docker-compose up --build
 The Panther Miner script requires the following configurations to be set in the
 `.env` file:
 
--   RPC_URL: The URL of the RPC node.
--   SUBGRAPH_ID: The ID of the subgraph.
--   CONTRACT_ADDRESS: The address of the BusTree Smart Contract.
--   INTERVAL: The duration between each repetitive execution in seconds.
--   PRIVATE_KEY: private key of the wallet that will submit the proofs as a Miner.
+-   `RPC_URL`: The URL of the RPC node.
+-   `SUBGRAPH_ID`: The ID of the subgraph.
+-   `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
+-   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
+-   `INTERVAL`: The duration between each repetitive execution in seconds.
+-   `PRIVATE_KEY`: private key of the wallet that will submit the proofs as a Miner.
 
 ## Contributing
 
