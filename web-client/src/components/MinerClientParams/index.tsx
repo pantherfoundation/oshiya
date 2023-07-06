@@ -10,7 +10,6 @@ import {useDispatch} from 'react-redux';
 import {updateMinerParams} from 'redux/slices/miner/minerParams';
 import {getZkpBalance} from 'redux/slices/miner/zkpBalance';
 import {AppDispatch, useAppSelector} from 'redux/store';
-import {updateMiningStatus} from 'redux/slices/miner/miningStatus';
 
 const MinerClientParamsForm = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -18,11 +17,12 @@ const MinerClientParamsForm = () => {
     const [state, setState] = useState<
         Omit<MinerClientParams, 'interval'> & {interval: string}
     >({
-        interval: '30',
+        interval: '20',
         privateKey: '',
         rpcUrl: env.RPC_URL || '',
         contractAddr: env.CONTRACT_ADDRESS || '',
         subgraphId: env.SUBGRAPH_ID || '',
+        zkpTokenAddr: env.ZKP_TOKEN_ADDRESS || '',
     });
 
     function updateStateHandler(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -51,6 +51,9 @@ const MinerClientParamsForm = () => {
             return [false, 'Invalid contract address.'];
 
         if (!state.subgraphId) return [false, 'Subgraph ID field is required.'];
+
+        if (!state.zkpTokenAddr)
+            return [false, 'ZKP Token Adreess field is required.'];
 
         return [true, null];
     }
@@ -87,6 +90,12 @@ const MinerClientParamsForm = () => {
                     label="Subgraph ID"
                     value={state.subgraphId}
                     name="subgraphId"
+                    onChange={updateStateHandler}
+                />
+                <Input
+                    label="ZKP Token Address"
+                    value={state.zkpTokenAddr}
+                    name="zkpTokenAddr"
                     onChange={updateStateHandler}
                 />
             </div>

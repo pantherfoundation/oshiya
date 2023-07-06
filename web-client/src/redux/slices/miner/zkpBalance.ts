@@ -12,14 +12,15 @@ const initialState: {
 
 export const getZkpBalance = createAsyncThunk(
     'miner/zkp/balance',
-    async ({rpcUrl, privateKey}: MinerClientParams) => {
-        if (!privateKey || !rpcUrl) return '0';
+    async ({rpcUrl, privateKey, zkpTokenAddr}: MinerClientParams) => {
+        console.log({rpcUrl, privateKey, zkpTokenAddr});
+        if (!privateKey || !rpcUrl || !zkpTokenAddr) return '0';
 
         const provider = getDefaultProvider(rpcUrl);
         const wallet = new Wallet(privateKey, provider);
 
         const contract = new Contract(
-            '0x3f73371cfa58f338c479928ac7b4327478cb859f', // zkp token address on mumbai
+            zkpTokenAddr,
             [
                 {
                     constant: true,

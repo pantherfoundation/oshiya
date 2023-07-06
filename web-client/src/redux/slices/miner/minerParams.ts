@@ -7,18 +7,15 @@ const initialState: MinerClientParams = {
     rpcUrl: '',
     subgraphId: '',
     contractAddr: '',
+    zkpTokenAddr: '',
 };
 
 const minerParamsSlice = createSlice({
     name: 'miner/params',
     initialState,
     reducers: {
-        updateMinerParams: (state, {payload}) => {
-            state.contractAddr = payload.contractAddr;
-            state.interval = payload.interval;
-            state.rpcUrl = payload.rpcUrl;
-            state.subgraphId = payload.subgraphId;
-            state.privateKey = payload.privateKey;
+        updateMinerParams: (_state, {payload}) => {
+            return payload;
         },
     },
 });
