@@ -33,11 +33,14 @@ async function main() {
     const [tree, lastScannedBlock, insertedQueueIds] = await coldStart(
         env.SUBGRAPH_ID,
     );
+
     const db = new MemCache(insertedQueueIds);
     const scanner = new EventScanner(
         env.RPC_URL,
         env.CONTRACT_ADDRESS,
-        lastScannedBlock,
+        isFinite(lastScannedBlock)
+            ? lastScannedBlock
+            : env.GENESIS_BLOCK_NUMBER,
         db,
     );
 

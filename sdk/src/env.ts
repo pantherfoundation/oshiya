@@ -11,6 +11,7 @@ export const requiredVars: Array<keyof EnvVariables> = [
     'RPC_URL',
     'CONTRACT_ADDRESS',
     'SUBGRAPH_ID',
+    'GENESIS_BLOCK_NUMBER',
 ];
 
 function logEnvVariable(
@@ -30,7 +31,7 @@ export function parseEnvVariables(env: NodeJS.ProcessEnv): EnvVariables {
             );
         }
 
-        if (varName === 'INTERVAL') {
+        if (varName === 'INTERVAL' || varName === 'GENESIS_BLOCK_NUMBER') {
             parsed[varName] = parseInt(env[varName]!);
         } else {
             parsed[varName] = env[varName]!;

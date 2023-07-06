@@ -64,6 +64,7 @@ export type EnvVariables = {
     CONTRACT_ADDRESS: string;
     INTERVAL: number;
     SUBGRAPH_ID: string;
+    GENESIS_BLOCK_NUMBER: number;
 };
 
 export type ProofInputs = {
