@@ -70,8 +70,7 @@ async function handleMining(eventData: MinerClientParams) {
         miningStats.printMetrics();
         self.postMessage({
             type: WorkerMessage.Stats,
-            countMetrics: miningStats.countMetrics,
-            listMetrics: miningStats.listMetrics,
+            stats: miningStats.stats,
         });
 
         await sleep(interval * 1000);

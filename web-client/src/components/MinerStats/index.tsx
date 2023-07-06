@@ -1,48 +1,37 @@
 import {useAppSelector} from '../../redux/store';
 import React from 'react';
+import {utils} from 'ethers';
 
 const MinerStats = () => {
-    const {countMetrics, listMetrics} = useAppSelector(state => state.stats);
-
-    const isNoCountMetrics = Object.keys(countMetrics).length === 0;
-    const isNoListMetrics = Object.keys(listMetrics).length === 0;
-
-    if (isNoCountMetrics && isNoListMetrics) return null;
+    const stats = useAppSelector(state => state.stats);
+    const balance = useAppSelector(state => state.miner.zkpBalance.value);
 
     return (
         <div className="w-full">
             <h1 className="text-center mt-9 text-6xl">Mining Statistics</h1>
 
-            {isNoCountMetrics === false && (
-                <div className="max-w-lg mx-auto mt-4">
-                    {Object.entries(countMetrics).map(([key, value]) => (
-                        <div
-                            className="flex flex-row justify-between align-middle mb-2"
-                            key={key}
-                        >
-                            <p>
-                                <strong>{value}</strong> x {key}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div className="mx-auto mt-4 px-4 max-w-xl">
+                <p className="text-left mb-2">
+                    Balance (reward):{' '}
+                    <strong>{utils.formatEther(balance)} $ZKP</strong>
+                </p>
 
-            {isNoListMetrics === false && (
-                <div className="max-w-lg mx-auto">
-                    {Object.entries(listMetrics).map(([key, value]) => (
-                        <div
-                            className="flex flex-row justify-between align-middle"
-                            key={key}
-                        >
-                            <p className="first-letter:capitalize">{key}</p>
-                            <p className="font-bold w-10 truncate">
-                                {value.join(',')}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            )}
+                {[
+                    ['Mining Success', stats.miningSuccess],
+                    ['Mining Error', stats.miningError],
+                    ['Generated Proof', stats.generatedProof],
+                    ['Submitted Proof', stats.submittedProof],
+                ].map(([key, value]) => (
+                    <div
+                        className="flex flex-row justify-between align-middle mb-2"
+                        key={key}
+                    >
+                        <p>
+                            <strong>{value}</strong> x {key}
+                        </p>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

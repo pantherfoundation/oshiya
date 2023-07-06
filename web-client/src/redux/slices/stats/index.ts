@@ -1,19 +1,19 @@
 import {createSlice} from '@reduxjs/toolkit';
+import {Stats} from '@panther-miner/sdk/src/mining-stats';
 
-export type StatsState = {
-    countMetrics: Record<string, number>;
-    listMetrics: Record<string, Array<number>>;
+const initialState: Stats = {
+    generatedProof: 0,
+    submittedProof: 0,
+    miningSuccess: 0,
+    miningError: 0,
 };
-
-const initialState: StatsState = {countMetrics: {}, listMetrics: {}};
 
 const statsSlice = createSlice({
     name: 'stats',
     initialState,
     reducers: {
-        updateStats: (state, {payload}) => {
-            state.countMetrics = payload.countMetrics;
-            state.listMetrics = payload.listMetrics;
+        updateStats: (_state, {payload}) => {
+            return payload;
         },
     },
 });

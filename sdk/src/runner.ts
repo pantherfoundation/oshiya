@@ -174,16 +174,23 @@ export async function doWork(
             queueAndUtxos.utxos,
             log,
         );
+
         const proof = await generateProof(zkProver, proofInputs, log);
         logAndCount('Generated proof', miningStats, log);
-        await submitProof(miner, proof, proofInputs, queueAndUtxos);
+        miningStats.incrementStats('generatedProof');
+
+        await submitProof(miner, proof, proofInputs, queueAndUtxos, log);
         logAndCount('Submitted proof', miningStats, log);
+        miningStats.incrementStats('submittedProof');
 
         batchProcessing.tree = copyOfTree;
         batchProcessing.setBusBatchIsOnboarded(queueAndUtxos.queue.queueId);
+
         log('Proof submitted');
         log(`New BusTree root: ${batchProcessing.tree.root}`);
         logAndCount('Mining success', miningStats, log);
+        miningStats.incrementStats('miningSuccess');
+
         addToListAndCount(
             'Mined reward, ZKP',
             Number(utils.formatEther(queueAndUtxos.queue.reward)),
@@ -195,6 +202,11 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
-        logAndCount(`Mining error: ${parseTxErrorMessage(e)}`, miningStats);
+        logAndCount(
+            `Mining error: ${parseTxErrorMessage(e)}`,
+            miningStats,
+            log,
+        );
+        miningStats.incrementStats('miningError');
     }
 }

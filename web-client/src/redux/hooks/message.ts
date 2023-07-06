@@ -3,11 +3,12 @@ import {useDispatch} from 'react-redux';
 import {newLog} from 'redux/slices/logs';
 import {updateMiningStatus} from 'redux/slices/miner/miningStatus';
 import {getZkpBalance} from 'redux/slices/miner/zkpBalance';
-import {StatsState, updateStats} from 'redux/slices/stats';
+import {updateStats} from 'redux/slices/stats';
 import {AppDispatch, useAppSelector} from 'redux/store';
 import {workerManager} from 'services/worker-manager';
 import {WorkerMessage} from 'types/worker';
 import {isMessageOf} from 'utils/worker';
+import {Stats} from '@panther-miner/sdk/lib';
 
 export function useMessageHandler() {
     const dispatch = useDispatch<AppDispatch>();
@@ -21,13 +22,8 @@ export function useMessageHandler() {
                 dispatch(newLog(event.data.message));
             }
 
-            if (isMessageOf<StatsState>(WorkerMessage.Stats, event.data)) {
-                dispatch(
-                    updateStats({
-                        countMetrics: event.data.countMetrics,
-                        listMetrics: event.data.listMetrics,
-                    }),
-                );
+            if (isMessageOf<{stats: Stats}>(WorkerMessage.Stats, event.data)) {
+                dispatch(updateStats(event.data.stats));
                 dispatch(getZkpBalance(minerParams));
             }
 
