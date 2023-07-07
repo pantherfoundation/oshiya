@@ -42,7 +42,7 @@ const derivePrivKeyFromSignature = (signature: string): bigint => {
     if (!pair) {
         throw new Error('Failed to extract secrets pair from signature');
     }
-    const privKey = moduloBabyJubSubFieldPrime(poseidon(pair));
+    const privKey = poseidon(pair);
     return privKey;
 };
 
