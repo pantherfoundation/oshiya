@@ -10,10 +10,17 @@ import {useDispatch} from 'react-redux';
 import {updateMinerParams} from 'redux/slices/miner/minerParams';
 import {getZkpBalance} from 'redux/slices/miner/zkpBalance';
 import {AppDispatch, useAppSelector} from 'redux/store';
+import {useWalletConnect, useWalletContext} from 'hooks/wallet';
+import {generatePrivKey} from 'services/keys';
+import {hexlify} from 'ethers/lib/utils.js';
 
 const MinerClientParamsForm = () => {
     const dispatch = useDispatch<AppDispatch>();
     const isMining = useAppSelector(state => state.miner.isMining);
+    const connect = useWalletConnect();
+    const walletContext = useWalletContext();
+
+    const [showPk, setShowPk] = useState<boolean>(false);
     const [state, setState] = useState<{
         interval: string;
         privateKey: string;
@@ -49,22 +56,45 @@ const MinerClientParamsForm = () => {
         return [true, null];
     }
 
+    async function generateMinerPK() {
+        if (!walletContext.isConnected) return connect();
+        if (!walletContext.signer) return;
+        const pk = await generatePrivKey(walletContext.signer);
+        if (pk instanceof Error) return alert(pk.message);
+        if (pk.length !== 66) return alert('Invalid private key');
+        setState({...state, privateKey: pk});
+    }
+
     return (
         <div>
             <div>
-                <Input
-                    label="Interval (in seconds)"
-                    value={state.interval}
-                    name="interval"
-                    onChange={updateStateHandler}
-                />
-                <Input
-                    label="Private Key"
-                    placeholder="Q..."
-                    value={state.privateKey}
-                    name="privateKey"
-                    onChange={updateStateHandler}
-                />
+                <div className="mb-4">
+                    <Input
+                        label="Interval (in seconds)"
+                        value={state.interval}
+                        name="interval"
+                        onChange={updateStateHandler}
+                    />
+                </div>
+                <div className="flex items-end justify-between space-x-5 mb-4">
+                    <div className="w-full">
+                        <Input
+                            label="Private Key"
+                            placeholder="Q..."
+                            value={state.privateKey}
+                            name="privateKey"
+                            onChange={updateStateHandler}
+                            type={showPk ? 'text' : 'password'}
+                        />
+                    </div>
+                    <div className="flex-0 flex-shrink-0 mb-0.5">
+                        <Button onClick={generateMinerPK}>
+                            {walletContext.isConnected
+                                ? 'Generate private key using MetaMask'
+                                : 'Connect MetaMask'}
+                        </Button>
+                    </div>
+                </div>
                 <Input
                     label="RPC URL"
                     value={state.rpcUrl}
@@ -102,6 +132,15 @@ const MinerClientParamsForm = () => {
                     }}
                 >
                     Stop Mining
+                </Button>
+
+                <Button
+                    onClick={() => {
+                        setShowPk(!showPk);
+                    }}
+                    disabled={!state.privateKey}
+                >
+                    {showPk ? 'Hide Private Key' : 'Show Private Key'}
                 </Button>
             </div>
             <p className="text-xs mt-1">
