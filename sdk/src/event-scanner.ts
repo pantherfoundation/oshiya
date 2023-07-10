@@ -7,7 +7,7 @@ import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const PAGE_SIZE = 10_000; // Amount of blocks to scan at once
+const PAGE_SIZE = 100; // Amount of blocks to scan at once
 
 export class EventScanner {
     private contract: BusTree;

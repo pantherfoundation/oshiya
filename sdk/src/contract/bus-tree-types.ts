@@ -272,8 +272,6 @@ export interface BusTree extends BaseContract {
         ): Promise<ContractTransaction>;
 
         simulateAddUtxosToBusQueue(
-            utxos: BytesLike[],
-            reward: BigNumberish,
             overrides?: Overrides & {from?: string | Promise<string>},
         ): Promise<ContractTransaction>;
 
@@ -340,8 +338,6 @@ export interface BusTree extends BaseContract {
     ): Promise<ContractTransaction>;
 
     simulateAddUtxosToBusQueue(
-        utxos: BytesLike[],
-        reward: BigNumberish,
         overrides?: Overrides & {from?: string | Promise<string>},
     ): Promise<ContractTransaction>;
 
