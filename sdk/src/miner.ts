@@ -85,13 +85,18 @@ export class Miner {
             batchRoot,
             newBranchRoot,
             proof,
+            {
+                gasLimit: 500_000,
+            },
         );
         this.log(`Submitted tx ${tx.hash}`);
         return await tx.wait();
     }
 
     public async simulateAddUtxosToBusQueue(): Promise<ContractReceipt> {
-        const tx = await this.busContract.simulateAddUtxosToBusQueue();
+        const tx = await this.busContract.simulateAddUtxosToBusQueue({
+            gasLimit: 500_000,
+        });
         this.log(`Submitted tx ${tx.hash} for generating random utxos`);
         return tx.wait();
     }

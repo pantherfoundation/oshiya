@@ -89,6 +89,7 @@ export function logAndCount(
     miningStats: MiningStats,
     log: LogFn = defaultLog,
 ) {
+
     log(messageAndMetric);
     miningStats.incrementCountMetric(messageAndMetric, 1);
 }

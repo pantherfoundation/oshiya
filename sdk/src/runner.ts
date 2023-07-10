@@ -5,7 +5,6 @@ import {utils} from 'ethers';
 
 import {BatchProcessing} from './batch-processing';
 import {bigintToBytes32} from './bigint-conversions';
-import {parseTxErrorMessage} from './errors';
 import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
 import {EMPTY_TREE_ROOT, MinerTree} from './miner-tree';
@@ -131,12 +130,6 @@ async function simulateAddUtxos(
         );
     } catch (e: any) {
         console.error(e);
-        logAndCount(
-            `Insert UTXOs error: ${parseTxErrorMessage(e)}`,
-            miningStats,
-            log,
-        );
-        miningStats.incrementStats('simulateError');
     }
 }
 
@@ -222,11 +215,7 @@ async function mineUtxos(
         );
     } catch (e: any) {
         console.error(e);
-        logAndCount(
-            `Mining error: ${parseTxErrorMessage(e)}`,
-            miningStats,
-            log,
-        );
+        logAndCount(`Mining error: ${e}`, miningStats, log);
         miningStats.incrementStats('miningError');
     }
 }

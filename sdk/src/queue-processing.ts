@@ -30,7 +30,9 @@ export class QueueProcessing {
 
         const queue = await this.miner.getHighestRewardQueue();
         if (!queue) {
-            this.log('No queue found yet that meets criteria');
+            this.log(
+                'No queue found yet that meets criteria of the minimum reward',
+            );
             return null;
         }
 

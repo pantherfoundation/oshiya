@@ -3,16 +3,13 @@ import Input from 'components/widgets/Input';
 import React, {useState} from 'react';
 import {env} from 'services/env';
 import {workerManager} from 'services/worker-manager';
-import {MinerClientParams} from 'types/worker';
 import {isValidHttpUrl} from 'utils/helpers';
-import {ethers} from 'ethers';
 import {useDispatch} from 'react-redux';
 import {updateMinerParams} from 'redux/slices/miner/minerParams';
 import {getMinerBalance} from 'redux/slices/miner/minerBalance';
 import {AppDispatch, useAppSelector} from 'redux/store';
 import {useWalletConnect, useWalletContext} from 'hooks/wallet';
 import {generatePrivKey} from 'services/keys';
-import {hexlify} from 'ethers/lib/utils.js';
 import {MiningStatus} from 'types/miner';
 import {updateMiningStatus} from 'redux/slices/miner/miningStatus';
 
@@ -161,6 +158,18 @@ const MinerClientParamsForm = () => {
             </p>
             <p className="text-xs mt-1">
                 * You need to stop and start the miner again to do any update.
+            </p>
+            <p className="text-xs mt-1">
+                * To get more details, please, follow the{' '}
+                <a
+                    href="https://blog.pantherprotocol.io/testnet-stage0-live/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                >
+                    link
+                </a>
+                .
             </p>
         </div>
     );

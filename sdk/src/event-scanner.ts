@@ -38,6 +38,7 @@ export class EventScanner {
 
     public async scan(): Promise<void> {
         try {
+            this.log('Getting the current block number...')
             const currentBlock = await this.contract.provider.getBlockNumber();
             for (
                 let i = this.lastScannedBlock;

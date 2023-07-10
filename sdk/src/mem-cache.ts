@@ -25,8 +25,15 @@ export class MemCache {
         if (!this.utxos[rec.queueId]) {
             this.utxos[rec.queueId] = [];
         }
-        this.utxos[rec.queueId].push(rec);
-        this.log(`Stored utxo for queueId ${rec.queueId} in MemCache`);
+        // FIXME: this a temporary fix for the issue where the same UTXO is
+        // added to the queue twice
+        const insertedIndices = this.utxos[rec.queueId].map(
+            u => u.utxoIndexInBatch,
+        );
+        if (!insertedIndices.includes(rec.utxoIndexInBatch)) {
+            this.utxos[rec.queueId].push(rec);
+            this.log(`Stored utxo for queueId ${rec.queueId} in MemCache`);
+        }
     }
 
     setBusBatchIsOnboarded(queueId: number): void {

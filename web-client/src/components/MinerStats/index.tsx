@@ -46,7 +46,7 @@ const MinerStats = () => {
                         )}
                 </div>
                 <p className="text-left mb-2">
-                    Reward:{' '}
+                    ZKP Balance:{' '}
                     <strong className="inline-block ml-1">
                         {utils.formatEther(zkp)} $ZKP
                     </strong>
@@ -59,7 +59,7 @@ const MinerStats = () => {
 
                 {[
                     ['Mining Success', stats.miningSuccess],
-                    ['Mining Error', stats.miningError],
+                    ['Dropped mining attempt', stats.miningError],
                     ['Generated Proof', stats.generatedProof],
                     ['Submitted Proof', stats.submittedProof],
                 ].map(([key, value]) => (
