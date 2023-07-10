@@ -13,7 +13,7 @@ const initialState: {
     status: 'idle',
 };
 
-export const getZkpBalance = createAsyncThunk(
+export const getMinerBalance = createAsyncThunk(
     'miner/zkp/balance',
     async ({rpcUrl, privateKey}: MinerClientParams) => {
         if (!privateKey || !rpcUrl) return '0';
@@ -54,25 +54,25 @@ export const getZkpBalance = createAsyncThunk(
     },
 );
 
-const zkpBalanceSlice = createSlice({
-    name: 'miner/zkp/balance',
+const minerBalanceSlice = createSlice({
+    name: 'miner/balance',
     initialState,
     reducers: {},
     extraReducers(builder) {
         builder
-            .addCase(getZkpBalance.pending, state => {
+            .addCase(getMinerBalance.pending, state => {
                 state.status = 'loading';
             })
-            .addCase(getZkpBalance.fulfilled, (state, action) => {
+            .addCase(getMinerBalance.fulfilled, (state, action) => {
                 const [zkp, matic] = action.payload;
                 state.zkp = zkp;
                 state.matic = matic;
                 state.status = 'idle';
             })
-            .addCase(getZkpBalance.rejected, state => {
+            .addCase(getMinerBalance.rejected, state => {
                 state.status = 'error';
             });
     },
 });
 
-export const zkpBalanceReducer = zkpBalanceSlice.reducer;
+export const mienrBalanceReducer = minerBalanceSlice.reducer;

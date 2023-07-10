@@ -1,10 +1,9 @@
 import {createSlice} from '@reduxjs/toolkit';
-
-const initialState: boolean = false;
+import {MiningStatus} from 'types/miner';
 
 const miningStatusSlice = createSlice({
     name: 'miner/mining-status',
-    initialState,
+    initialState: MiningStatus.Stoped,
     reducers: {
         updateMiningStatus: (state, {payload}) => {
             state = payload;

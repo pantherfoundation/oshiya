@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 
 const MinerStats = () => {
     const stats = useAppSelector(state => state.stats);
-    const {matic, zkp} = useAppSelector(state => state.miner.zkpBalance);
+    const {matic, zkp} = useAppSelector(state => state.miner.minerBalance);
     const minerParams = useAppSelector(state => state.miner.minerParams);
 
     const walletAddress = minerParams.privateKey
@@ -34,7 +34,7 @@ const MinerStats = () => {
                         </strong>
                     </p>
                     {walletAddress &&
-                        new BigNumber(matic).shiftedBy(-18).lte(0.2) && (
+                        new BigNumber(matic).shiftedBy(-18).lte(0.1) && (
                             <p className="text-sm text-red-700 font-bold">
                                 <strong>
                                     Your MATIC balance is too low, make sure to

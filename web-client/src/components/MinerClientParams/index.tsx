@@ -8,15 +8,17 @@ import {isValidHttpUrl} from 'utils/helpers';
 import {ethers} from 'ethers';
 import {useDispatch} from 'react-redux';
 import {updateMinerParams} from 'redux/slices/miner/minerParams';
-import {getZkpBalance} from 'redux/slices/miner/zkpBalance';
+import {getMinerBalance} from 'redux/slices/miner/zkpBalance';
 import {AppDispatch, useAppSelector} from 'redux/store';
 import {useWalletConnect, useWalletContext} from 'hooks/wallet';
 import {generatePrivKey} from 'services/keys';
 import {hexlify} from 'ethers/lib/utils.js';
+import {MiningStatus} from 'types/miner';
+import {updateMiningStatus} from 'redux/slices/miner/miningStatus';
 
 const MinerClientParamsForm = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const isMining = useAppSelector(state => state.miner.isMining);
+    const miningStatus = useAppSelector(state => state.miner.miningStatus);
     const connect = useWalletConnect();
     const walletContext = useWalletContext();
 
@@ -105,7 +107,12 @@ const MinerClientParamsForm = () => {
 
             <div className="mt-4 flex space-x-4">
                 <Button
-                    disabled={!isValidState()[0] || isMining}
+                    disabled={
+                        !isValidState()[0] ||
+                        miningStatus === MiningStatus.Active ||
+                        miningStatus === MiningStatus.Stoping ||
+                        miningStatus === MiningStatus.Starting
+                    }
                     onClick={() => {
                         const [isValid, error] = isValidState();
                         if (!isValid) return alert(error);
@@ -116,22 +123,28 @@ const MinerClientParamsForm = () => {
                             privateKey: state.privateKey,
                             rpcUrl: state.rpcUrl,
                         };
+                        dispatch(updateMiningStatus(MiningStatus.Starting));
                         workerManager.startMining(params);
                         dispatch(updateMinerParams(params));
-                        dispatch(getZkpBalance(params));
+                        dispatch(getMinerBalance(params));
                     }}
                 >
-                    Start Mining
+                    {miningStatus === MiningStatus.Starting
+                        ? 'Starting...'
+                        : 'Start Mining'}
                 </Button>
 
                 <Button
-                    disabled={!isMining}
+                    disabled={miningStatus !== MiningStatus.Active}
                     variant="error"
                     onClick={() => {
+                        dispatch(updateMiningStatus(MiningStatus.Stoping));
                         workerManager.stopMining();
                     }}
                 >
-                    Stop Mining
+                    {miningStatus === MiningStatus.Stoping
+                        ? 'Stopping'
+                        : 'Stop Mining'}
                 </Button>
 
                 <Button
@@ -145,6 +158,9 @@ const MinerClientParamsForm = () => {
             </div>
             <p className="text-xs mt-1">
                 * Stop mining will not interpret the current iteration
+            </p>
+            <p className="text-xs mt-1">
+                * You need to stop and start the miner again to do any update.
             </p>
         </div>
     );

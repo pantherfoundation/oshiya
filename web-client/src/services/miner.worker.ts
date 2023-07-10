@@ -14,6 +14,7 @@ import {MinerClientParams, WorkerMessage} from 'types/worker';
 import {TypedWorker, isMessageOf} from 'utils/worker';
 import {sleep} from 'utils/helpers';
 import {env} from './env';
+import {MiningStatus} from 'types/miner';
 
 const globalContext = {
     isMining: false,
@@ -29,7 +30,10 @@ function notify(message: string) {
 
 async function handleMining(eventData: MinerClientParams) {
     globalContext.isMining = true;
-    self.postMessage({type: WorkerMessage.MiningStatus, isMining: true});
+    self.postMessage({
+        type: WorkerMessage.MiningStatus,
+        status: MiningStatus.Active,
+    });
 
     const {privateKey, rpcUrl, interval} = eventData;
 
@@ -76,7 +80,10 @@ async function handleMining(eventData: MinerClientParams) {
         await sleep(interval * 1000);
     }
 
-    self.postMessage({type: WorkerMessage.MiningStatus, isMining: false});
+    self.postMessage({
+        type: WorkerMessage.MiningStatus,
+        status: MiningStatus.Stoped,
+    });
 }
 
 self.addEventListener('message', async event => {
