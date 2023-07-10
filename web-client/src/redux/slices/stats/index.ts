@@ -6,6 +6,7 @@ const initialState: Stats = {
     submittedProof: 0,
     miningSuccess: 0,
     miningError: 0,
+    simulateError: 0,
 };
 
 const statsSlice = createSlice({

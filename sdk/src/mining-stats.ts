@@ -10,6 +10,7 @@ export type Stats = {
     submittedProof: number;
     miningSuccess: number;
     miningError: number;
+    simulateError: number;
 };
 
 export class MiningStats {
@@ -20,6 +21,7 @@ export class MiningStats {
         submittedProof: 0,
         miningSuccess: 0,
         miningError: 0,
+        simulateError: 0,
     };
 
     public incrementStats(key: keyof Stats): void {

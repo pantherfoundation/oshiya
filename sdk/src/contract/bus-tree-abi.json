@@ -3,6 +3,21 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pantherPool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "_verifier",
         "type": "address"
       },
@@ -127,6 +142,51 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "reservationRate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "premiumRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueRewardParamsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "usage",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueRewardReserveUsed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "extraReseve",
+        "type": "uint256"
+      }
+    ],
+    "name": "BusQueueRewardReserved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "miner",
         "type": "address"
@@ -181,12 +241,77 @@
   },
   {
     "inputs": [],
+    "name": "OWNER",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PANTHER_POOL",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "REWARD_TOKEN",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "START_TIME",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "VERIFIER",
     "outputs": [
       {
         "internalType": "contract IPantherVerifier",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "basePerUtxoReward",
+    "outputs": [
+      {
+        "internalType": "uint96",
+        "name": "",
+        "type": "uint96"
       }
     ],
     "stateMutability": "view",
@@ -208,6 +333,30 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_utxoCounter",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAllowedUtxosAt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "allowedUtxos",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint32",
         "name": "queueId",
         "type": "uint32"
@@ -216,12 +365,12 @@
     "name": "getBusQueue",
     "outputs": [
       {
-        "internalType": "bytes32",
-        "name": "commitment",
-        "type": "bytes32"
-      },
-      {
         "components": [
+          {
+            "internalType": "uint32",
+            "name": "queueId",
+            "type": "uint32"
+          },
           {
             "internalType": "uint8",
             "name": "nUtxos",
@@ -230,6 +379,11 @@
           {
             "internalType": "uint96",
             "name": "reward",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint96",
+            "name": "potentialExtraReward",
             "type": "uint96"
           },
           {
@@ -243,18 +397,13 @@
             "type": "uint40"
           },
           {
-            "internalType": "uint32",
-            "name": "prevLink",
-            "type": "uint32"
-          },
-          {
-            "internalType": "uint32",
-            "name": "nextLink",
-            "type": "uint32"
+            "internalType": "bytes32",
+            "name": "commitment",
+            "type": "bytes32"
           }
         ],
-        "internalType": "struct BusQueues.BusQueue",
-        "name": "params",
+        "internalType": "struct BusQueues.BusQueueRec",
+        "name": "queue",
         "type": "tuple"
       }
     ],
@@ -271,24 +420,19 @@
         "type": "uint32"
       },
       {
-        "internalType": "uint8",
-        "name": "curQueueNumUtxos",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint96",
-        "name": "curQueueReward",
-        "type": "uint96"
-      },
-      {
         "internalType": "uint32",
         "name": "numPendingQueues",
         "type": "uint32"
       },
       {
         "internalType": "uint32",
-        "name": "oldestPendingQueueLink",
+        "name": "oldestPendingQueueId",
         "type": "uint32"
+      },
+      {
+        "internalType": "uint96",
+        "name": "rewardReserve",
+        "type": "uint96"
       }
     ],
     "stateMutability": "view",
@@ -350,6 +494,11 @@
             "type": "uint96"
           },
           {
+            "internalType": "uint96",
+            "name": "potentialExtraReward",
+            "type": "uint96"
+          },
+          {
             "internalType": "uint40",
             "name": "firstUtxoBlock",
             "type": "uint40"
@@ -371,6 +520,42 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getParams",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "premiumRate",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "premiumRate",
+        "type": "uint16"
+      }
+    ],
+    "name": "internalUpdateParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -465,6 +650,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "perMinuteUtxosLimit",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint32",
@@ -495,6 +693,13 @@
         "type": "uint96"
       }
     ],
+    "name": "simulateAddGivenUtxosToBusQueue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "simulateAddUtxosToBusQueue",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -527,6 +732,47 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "_perMinuteUtxosLimit",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint96",
+        "name": "_basePerUtxoReward",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "premiumRate",
+        "type": "uint16"
+      }
+    ],
+    "name": "updateParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "utxoCounter",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

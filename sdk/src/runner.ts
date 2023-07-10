@@ -88,7 +88,9 @@ export async function coldStart(
     );
 
     log(
-        `Cold start finished. Start chain scanning from block ${lastScannedBlock}`,
+        `Cold start finished. Start chain scanning from ${
+            isFinite(lastScannedBlock) ? lastScannedBlock : 'genesis'
+        } block`,
     );
     return [tree, lastScannedBlock, insertedQueueIds];
 }
@@ -123,13 +125,6 @@ export async function doWork(
     log: LogFn = defaultLog,
 ): Promise<void> {
     try {
-        await miner.simulateAddUtxosToBusQueue();
-        logAndCount('Inserted UTXOs.', miningStats, log);
-        logAndCount(
-            'Checking and updating inserted batches.',
-            miningStats,
-            log,
-        );
         await batchProcessing.checkInsertedBatchesAndUpdateMinerTree();
 
         logAndCount('Checking BusTree root.', miningStats, log);
@@ -202,11 +197,30 @@ export async function doWork(
             miningStats,
         );
     } catch (e: any) {
+        console.error(e);
         logAndCount(
             `Mining error: ${parseTxErrorMessage(e)}`,
             miningStats,
             log,
         );
         miningStats.incrementStats('miningError');
+    }
+
+    try {
+        await miner.simulateAddUtxosToBusQueue();
+        logAndCount('Inserted UTXOs.', miningStats, log);
+        logAndCount(
+            'Checking and updating inserted batches.',
+            miningStats,
+            log,
+        );
+    } catch (e: any) {
+        console.error(e);
+        logAndCount(
+            `Insert UTXOs error: ${parseTxErrorMessage(e)}`,
+            miningStats,
+            log,
+        );
+        miningStats.incrementStats('simulateError');
     }
 }

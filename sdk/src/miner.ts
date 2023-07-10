@@ -3,17 +3,11 @@
 
 import {ContractReceipt, Wallet, utils} from 'ethers';
 
-import {bigintToBytes32} from './bigint-conversions';
 import {BusTree} from './contract/bus-tree-types';
 import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
-const SNARK_FIELD_SIZE = BigInt(
-    '21888242871839275222246405745257275088548364400416034343698204186575808495617',
-);
-
-const REWARD_PER_UTXO = 0.1;
 const MIN_REWARD = utils.parseEther('2');
 
 function selectHighestN<T>(
@@ -38,19 +32,6 @@ function selectHighestN<T>(
 function getRandomElement<T>(array: Array<T>): T {
     const randomIndex = Math.floor(Math.random() * array.length);
     return array[randomIndex];
-}
-
-function getRandomInSnarkField(): string {
-    const bytes = 32;
-    let hex = '';
-    for (let i = 0; i < bytes; i++) {
-        // Generate a random byte (0-255)
-        const randomByte = Math.floor(Math.random() * 256);
-        // Convert the byte to hexadecimal (always results in a 2-character string)
-        const hexByte = randomByte.toString(16).padStart(2, '0');
-        hex += hexByte;
-    }
-    return bigintToBytes32(BigInt(`0x${hex}`) % SNARK_FIELD_SIZE);
 }
 
 export class Miner {
@@ -110,19 +91,8 @@ export class Miner {
     }
 
     public async simulateAddUtxosToBusQueue(): Promise<ContractReceipt> {
-        const numUtxos = Math.floor(Math.random() * 8) + 1;
-        const utxos: Array<string> = [];
-        for (let i = 0; i < numUtxos; i++) {
-            utxos.push(getRandomInSnarkField());
-        }
-        const tx = await this.busContract.simulateAddUtxosToBusQueue(
-            utxos,
-            utils.parseEther((numUtxos * REWARD_PER_UTXO).toString()),
-        );
-        this.log(
-            `Submitted tx ${tx.hash} for generating ${numUtxos} random utxos`,
-        );
-
+        const tx = await this.busContract.simulateAddUtxosToBusQueue();
+        this.log(`Submitted tx ${tx.hash} for generating random utxos`);
         return tx.wait();
     }
 
