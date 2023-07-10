@@ -116,14 +116,38 @@ async function getOldestBlockNumber(
     return subgraph.getOldestBlockNumber(insertedQueueIds);
 }
 
-export async function doWork(
+async function simulateAddUtxos(
+    miner: Miner,
+    miningStats: MiningStats,
+    log: LogFn = defaultLog,
+) {
+    try {
+        await miner.simulateAddUtxosToBusQueue();
+        logAndCount('Inserted UTXOs.', miningStats, log);
+        logAndCount(
+            'Checking and updating inserted batches.',
+            miningStats,
+            log,
+        );
+    } catch (e: any) {
+        console.error(e);
+        logAndCount(
+            `Insert UTXOs error: ${parseTxErrorMessage(e)}`,
+            miningStats,
+            log,
+        );
+        miningStats.incrementStats('simulateError');
+    }
+}
+
+async function mineUtxos(
     miner: Miner,
     zkProver: ZKProver,
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
     log: LogFn = defaultLog,
-): Promise<void> {
+) {
     try {
         await batchProcessing.checkInsertedBatchesAndUpdateMinerTree();
 
@@ -205,22 +229,24 @@ export async function doWork(
         );
         miningStats.incrementStats('miningError');
     }
+}
 
-    try {
-        await miner.simulateAddUtxosToBusQueue();
-        logAndCount('Inserted UTXOs.', miningStats, log);
-        logAndCount(
-            'Checking and updating inserted batches.',
-            miningStats,
-            log,
-        );
-    } catch (e: any) {
-        console.error(e);
-        logAndCount(
-            `Insert UTXOs error: ${parseTxErrorMessage(e)}`,
-            miningStats,
-            log,
-        );
-        miningStats.incrementStats('simulateError');
-    }
+export async function doWork(
+    miner: Miner,
+    zkProver: ZKProver,
+    batchProcessing: BatchProcessing,
+    queueProcessing: QueueProcessing,
+    miningStats: MiningStats,
+    log: LogFn = defaultLog,
+): Promise<void> {
+    await mineUtxos(
+        miner,
+        zkProver,
+        batchProcessing,
+        queueProcessing,
+        miningStats,
+        log,
+    );
+
+    await simulateAddUtxos(miner, miningStats, log);
 }

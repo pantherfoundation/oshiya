@@ -2,7 +2,7 @@ import {useEffect} from 'react';
 import {useDispatch} from 'react-redux';
 import {newLog} from 'redux/slices/logs';
 import {updateMiningStatus} from 'redux/slices/miner/miningStatus';
-import {getMinerBalance} from 'redux/slices/miner/zkpBalance';
+import {getMinerBalance} from 'redux/slices/miner/minerBalance';
 import {updateStats} from 'redux/slices/stats';
 import {AppDispatch, useAppSelector} from 'redux/store';
 import {workerManager} from 'services/worker-manager';

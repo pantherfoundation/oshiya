@@ -8,7 +8,7 @@ import {isValidHttpUrl} from 'utils/helpers';
 import {ethers} from 'ethers';
 import {useDispatch} from 'react-redux';
 import {updateMinerParams} from 'redux/slices/miner/minerParams';
-import {getMinerBalance} from 'redux/slices/miner/zkpBalance';
+import {getMinerBalance} from 'redux/slices/miner/minerBalance';
 import {AppDispatch, useAppSelector} from 'redux/store';
 import {useWalletConnect, useWalletContext} from 'hooks/wallet';
 import {generatePrivKey} from 'services/keys';

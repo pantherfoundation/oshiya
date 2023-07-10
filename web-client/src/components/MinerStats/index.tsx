@@ -2,6 +2,7 @@ import {useAppSelector} from '../../redux/store';
 import React from 'react';
 import {Wallet, utils} from 'ethers';
 import BigNumber from 'bignumber.js';
+import {env} from 'services/env';
 
 const MinerStats = () => {
     const stats = useAppSelector(state => state.stats);
@@ -49,6 +50,11 @@ const MinerStats = () => {
                     <strong className="inline-block ml-1">
                         {utils.formatEther(zkp)} $ZKP
                     </strong>
+                    {env.ZKP_TOKEN_ADDRESS && (
+                        <strong className="inline-block ml-2 font-mono text-sm">
+                            {env.ZKP_TOKEN_ADDRESS}
+                        </strong>
+                    )}
                 </p>
 
                 {[
