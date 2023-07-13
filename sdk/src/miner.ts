@@ -58,6 +58,7 @@ export class Miner {
 
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
         const queues = await this.busContract.getOldestPendingQueues(255);
+        this.log(`Found ${queues.length} queue(s)`);
         const queuesWithMoreThanMinReward = queues.filter(q =>
             q.reward.gt(MIN_REWARD),
         );
