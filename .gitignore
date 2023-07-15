@@ -16,3 +16,5 @@ web-client/public/*.zkey
 .DS_Store
 yarn-error.log
 sdk/stats.json
+sdk/scripts/*.json
+*.log

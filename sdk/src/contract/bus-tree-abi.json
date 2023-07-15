@@ -151,6 +151,12 @@
         "internalType": "uint256",
         "name": "premiumRate",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minEmptyQueueAge",
+        "type": "uint256"
       }
     ],
     "name": "BusQueueRewardParamsUpdated",
@@ -397,6 +403,11 @@
             "type": "uint40"
           },
           {
+            "internalType": "uint40",
+            "name": "remainingBlocks",
+            "type": "uint40"
+          },
+          {
             "internalType": "bytes32",
             "name": "commitment",
             "type": "bytes32"
@@ -509,6 +520,11 @@
             "type": "uint40"
           },
           {
+            "internalType": "uint40",
+            "name": "remainingBlocks",
+            "type": "uint40"
+          },
+          {
             "internalType": "bytes32",
             "name": "commitment",
             "type": "bytes32"
@@ -535,27 +551,14 @@
         "internalType": "uint16",
         "name": "premiumRate",
         "type": "uint16"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint16",
-        "name": "reservationRate",
-        "type": "uint16"
       },
       {
         "internalType": "uint16",
-        "name": "premiumRate",
+        "name": "minEmptyQueueAge",
         "type": "uint16"
       }
     ],
-    "name": "internalUpdateParams",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -754,6 +757,11 @@
       {
         "internalType": "uint16",
         "name": "premiumRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "minEmptyQueueAge",
         "type": "uint16"
       }
     ],

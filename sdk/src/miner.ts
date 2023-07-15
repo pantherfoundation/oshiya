@@ -8,7 +8,7 @@ import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
-const MIN_REWARD = utils.parseEther('2');
+const MIN_REWARD = utils.parseEther('1');
 
 function selectHighestN<T>(
     array: Array<T>,
@@ -59,8 +59,8 @@ export class Miner {
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
         const queues = await this.busContract.getOldestPendingQueues(255);
         this.log(`Found ${queues.length} queue(s)`);
-        const queuesWithMoreThanMinReward = queues.filter(q =>
-            q.reward.gt(MIN_REWARD),
+        const queuesWithMoreThanMinReward = queues.filter(
+            q => q.reward.gt(MIN_REWARD) && q.remainingBlocks == 0,
         );
         const topFive = selectHighestN(
             queuesWithMoreThanMinReward,

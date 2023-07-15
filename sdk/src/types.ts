@@ -9,6 +9,7 @@ export type BusQueueRecStructOutput = {
     reward: BigNumber;
     firstUtxoBlock: number;
     lastUtxoBlock: number;
+    remainingBlocks: number;
     commitment: string;
 };
 
