@@ -111,20 +111,24 @@ export declare namespace BusQueues {
     };
 
     export type BusQueueRecStruct = {
-        queueId: BigNumberish;
-        nUtxos: BigNumberish;
-        reward: BigNumberish;
-        firstUtxoBlock: BigNumberish;
-        lastUtxoBlock: BigNumberish;
-        commitment: BytesLike;
+        queueId: number;
+        nUtxos: number;
+        reward: BigNumber;
+        potentialExtraReward: BigNumber;
+        firstUtxoBlock: number;
+        lastUtxoBlock: number;
+        remainingBlocks: number;
+        commitment: string;
     };
 
     export type BusQueueRecStructOutput = {
         queueId: number;
         nUtxos: number;
         reward: BigNumber;
+        potentialExtraReward: BigNumber;
         firstUtxoBlock: number;
         lastUtxoBlock: number;
+        remainingBlocks: number;
         commitment: string;
     };
 }
