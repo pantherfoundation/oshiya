@@ -68,8 +68,8 @@ export class Subgraph {
         startingBatchIndex: number = 0,
     ): Promise<BusBatchOnboardedEvent[]> {
         let fetchedData: BusBatchOnboardedEvent[] = [];
-        const minLeftLeafIndex = startingBatchIndex << 6;
-        let pageIdx = 0;
+        let currentBatchIndex = startingBatchIndex;
+        let minLeftLeafIndex = startingBatchIndex << 6;
 
         while (true) {
             const queryBuilder = new QueryBuilder(
@@ -84,9 +84,7 @@ export class Subgraph {
                     'queueId',
                 ],
                 'busBatchOnboardeds',
-                `where: {leftLeafIndexInBusTree_gte: ${minLeftLeafIndex}}, first: ${PAGINATION_WINDOW_SIZE}, skip: ${
-                    pageIdx * PAGINATION_WINDOW_SIZE
-                }`,
+                `where: {leftLeafIndexInBusTree_gte: ${minLeftLeafIndex}}, orderBy: leftLeafIndexInBusTree, orderDirection: asc, first: ${PAGINATION_WINDOW_SIZE}`,
             );
 
             const data = await this.fetchFromSubgraph(queryBuilder);
@@ -103,7 +101,14 @@ export class Subgraph {
             if (onboardedBatches.length < PAGINATION_WINDOW_SIZE) {
                 break;
             } else {
-                pageIdx++;
+                const lastBatchIndex =
+                    onboardedBatches[onboardedBatches.length - 1].batchIndex;
+                if (lastBatchIndex >= currentBatchIndex) {
+                    currentBatchIndex = lastBatchIndex + 1;
+                    minLeftLeafIndex = currentBatchIndex << 6;
+                } else {
+                    break;
+                }
             }
         }
 
