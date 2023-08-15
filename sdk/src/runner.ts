@@ -81,10 +81,7 @@ export async function coldStart(
     log('Starting cold start');
     const [tree, filledBatches] = await initializeMinerTree(subgraphId);
     const insertedQueueIds = filledBatches.map(batch => Number(batch.queueId));
-    const lastScannedBlock = await getOldestBlockNumber(
-        subgraphId,
-        insertedQueueIds,
-    );
+    const lastScannedBlock = await getOldestBlockNumber(subgraphId);
 
     log(
         `Cold start finished. Start chain scanning from ${
@@ -107,12 +104,9 @@ async function initializeMinerTree(
 }
 
 // Gets oldest block number excluding inserted queueIds
-async function getOldestBlockNumber(
-    subgraphId: string,
-    insertedQueueIds: number[],
-): Promise<number> {
+async function getOldestBlockNumber(subgraphId: string): Promise<number> {
     const subgraph = new Subgraph(subgraphId);
-    return subgraph.getOldestBlockNumber(insertedQueueIds);
+    return subgraph.getOldestBlockNumber();
 }
 
 async function simulateAddUtxos(

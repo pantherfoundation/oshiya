@@ -3,11 +3,7 @@
 
 import axios from 'axios';
 
-import {
-    BusBatchOnboardedEvent,
-    BranchFilledEvent,
-    UtxoBusQueuedEvent,
-} from './types';
+import {BusBatchOnboardedEvent, BranchFilledEvent} from './types';
 
 const PAGINATION_WINDOW_SIZE = 1000;
 
@@ -115,17 +111,13 @@ export class Subgraph {
         return fetchedData;
     }
 
-    public async getOldestBlockNumber(notQueueIds: number[]): Promise<number> {
+    public async getOldestBlockNumber(): Promise<number> {
         const queryBuilder = new QueryBuilder(
             ['blockNumber'],
-            'utxoBusQueueds',
-            `where: { queueId_not_in: [${notQueueIds.join(', ')}] }`,
+            'busQueueOpeneds',
+            `where: {isOnboarded: false}, orderBy: blockNumber, orderDirection: asc, first: 1`,
         );
-
         const data = await this.fetchFromSubgraph(queryBuilder);
-        const blockNumbers = data.utxoBusQueueds.map(
-            (u: UtxoBusQueuedEvent) => u.blockNumber,
-        );
-        return Math.min(...blockNumbers);
+        return Number(data.busQueueOpeneds[0].blockNumber);
     }
 }
