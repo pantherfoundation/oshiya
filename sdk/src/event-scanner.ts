@@ -7,7 +7,7 @@ import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const PAGE_SIZE = 100; // Amount of blocks to scan at once
+const PAGE_SIZE = 1000; // Amount of blocks to scan at once
 
 export class EventScanner {
     private contract: BusTree;
@@ -38,8 +38,10 @@ export class EventScanner {
 
     public async scan(): Promise<void> {
         try {
-            this.log('Getting the current block number...')
-            const currentBlock = await this.contract.provider.getBlockNumber();
+            this.log('Getting the current block number...');
+            const currentBlock = Number(
+                await this.contract.provider.getBlockNumber(),
+            );
             for (
                 let i = this.lastScannedBlock;
                 i < currentBlock;
