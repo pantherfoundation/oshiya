@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import crypto from 'crypto';
+
 import {utils} from 'ethers';
 
+import {bigintToBytes32} from './bigint-conversions';
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {Miner} from './miner';
@@ -13,6 +16,21 @@ import {
     fillEmptyUTXOs,
 } from './miner-tree';
 import {UtxoBusQueuedEvent, ProofInputs} from './types';
+
+const SNARK_FIELD_SIZE =
+    21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+
+const generateRandom256Bits = (): bigint => {
+    const min =
+        6350874878119819312338956282401532410528162663560392320966563075034087161851n;
+    let randomness;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        randomness = BigInt('0x' + crypto.randomBytes(32).toString('hex'));
+        if (randomness >= min) break;
+    }
+    return randomness;
+};
 
 export class QueueProcessing {
     private log: LogFn;
@@ -58,6 +76,7 @@ export class QueueProcessing {
         minerAddress: string,
         copyOfTree: MinerTree,
         utxoBusQueuedEvents: UtxoBusQueuedEvent[],
+        queueId: number,
     ): ProofInputs {
         this.log('Preparing proof for queue');
         const utxos = utxoBusQueuedEvents.map(u => u.utxo);
@@ -65,6 +84,15 @@ export class QueueProcessing {
         const batchRoot = calculateBatchRoot(newLeafs);
         copyOfTree.insertLeaf(batchRoot);
         const queueRoot = calculateDegenerateTreeRoot(utxos);
+        const random = generateRandom256Bits() % SNARK_FIELD_SIZE;
+
+        const extraInput = utils.solidityPack(
+            ['address', 'uint32'],
+            [minerAddress, queueId],
+        ) as string;
+
+        const extraInputHash =
+            BigInt(utils.keccak256(extraInput)) % SNARK_FIELD_SIZE;
 
         const proofInputs: ProofInputs = {
             oldRoot: copyOfTree.prevRoot,
@@ -76,8 +104,8 @@ export class QueueProcessing {
             newLeafs,
             batchRoot,
             branchRoot: copyOfTree.branchRoot,
-            extraInput: minerAddress,
-            magicalConstraint: '0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00',
+            extraInput: bigintToBytes32(extraInputHash),
+            magicalConstraint: bigintToBytes32(random),
         };
 
         this.log('Proof for queue prepared');

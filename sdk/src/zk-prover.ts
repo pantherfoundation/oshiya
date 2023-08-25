@@ -41,6 +41,6 @@ export class ZKProver {
             replica.pi_c.slice(0, 2),
         ])(JSON.parse(JSON.stringify(lProof)));
 
-        return solProof;
+        return [solProof, publicSignals];
     }
 }
