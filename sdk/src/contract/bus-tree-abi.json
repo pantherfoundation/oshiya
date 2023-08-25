@@ -13,7 +13,7 @@
       },
       {
         "internalType": "address",
-        "name": "pantherPool",
+        "name": "_pantherPool",
         "type": "address"
       },
       {
@@ -311,6 +311,59 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "utxo",
+        "type": "bytes32"
+      }
+    ],
+    "name": "addUtxoToBusQueue",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "indexInQueue",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "utxos",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint96",
+        "name": "reward",
+        "type": "uint96"
+      }
+    ],
+    "name": "addUtxosToBusQueue",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "firstUtxoQueueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "firstUtxoIndexInQueue",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "basePerUtxoReward",
     "outputs": [
@@ -318,19 +371,6 @@
         "internalType": "uint96",
         "name": "",
         "type": "uint96"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "busTreeRoot",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -562,6 +602,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -574,19 +627,9 @@
         "type": "uint32"
       },
       {
-        "internalType": "bytes32",
-        "name": "busTreeNewRoot",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "batchRoot",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "busBranchNewRoot",
-        "type": "bytes32"
+        "internalType": "uint256[]",
+        "name": "inputs",
+        "type": "uint256[]"
       },
       {
         "components": [
@@ -666,74 +709,9 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "queueId",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint96",
-        "name": "extraReward",
-        "type": "uint96"
-      }
-    ],
-    "name": "simulateAddBusQueueReward",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "utxos",
-        "type": "bytes32[]"
-      },
-      {
-        "internalType": "uint96",
-        "name": "reward",
-        "type": "uint96"
-      }
-    ],
-    "name": "simulateAddGivenUtxosToBusQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "simulateAddUtxosToBusQueue",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "queueId",
-        "type": "uint32"
-      }
-    ],
-    "name": "simulateSetBusQueueAsProcessed",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "commitment",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint8",
-        "name": "nUtxos",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint96",
-        "name": "reward",
-        "type": "uint96"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },

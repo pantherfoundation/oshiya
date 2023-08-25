@@ -3,7 +3,7 @@
 
 import {ContractReceipt, Wallet, utils} from 'ethers';
 
-import {BusTree} from './contract/bus-tree-types';
+import {PantherBusTree} from './contract/bus-tree-types';
 import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
@@ -36,7 +36,7 @@ function getRandomElement<T>(array: Array<T>): T {
 
 export class Miner {
     public readonly address: string;
-    private readonly busContract: BusTree;
+    private readonly busContract: PantherBusTree;
 
     private log: LogFn;
 
@@ -74,20 +74,16 @@ export class Miner {
     public async mineQueue(
         minerAddress: string,
         queueId: bigint,
-        newBusTreeRoot: string,
-        newBranchRoot: string,
-        batchRoot: string,
+        publicSignals: any,
         proof: any,
     ): Promise<ContractReceipt> {
         const tx = await this.busContract.onboardQueue(
             minerAddress,
             queueId,
-            newBusTreeRoot,
-            batchRoot,
-            newBranchRoot,
+            publicSignals,
             proof,
             {
-                gasLimit: 500_000,
+                gasLimit: 1_000_000,
             },
         );
         this.log(`Submitted tx ${tx.hash}`);
@@ -103,6 +99,6 @@ export class Miner {
     }
 
     public async getBusTreeRoot(): Promise<string> {
-        return await this.busContract.busTreeRoot();
+        return await this.busContract.getRoot();
     }
 }

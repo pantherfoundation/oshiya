@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
-import {BusTree} from './contract/bus-tree-types';
+import {PantherBusTree} from './contract/bus-tree-types';
 import {initializeReadOnlyBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const PAGE_SIZE = 1000; // Amount of blocks to scan at once
+const PAGE_SIZE = 1_000; // Amount of blocks to scan at once
 
 export class EventScanner {
-    private contract: BusTree;
+    private contract: PantherBusTree;
     private eventTopics: any;
     private db: MemCache;
     private lastScannedBlock: number;

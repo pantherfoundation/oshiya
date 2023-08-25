@@ -11,21 +11,23 @@ import {EMPTY_TREE_ROOT, MinerTree} from './miner-tree';
 import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
 import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
-import {BusBatchOnboardedEvent} from './types';
+import {BusBatchOnboardedEvent, ProofInputs, UtxoBusQueuedEvent} from './types';
 import {ZKProver} from './zk-prover';
 
 async function prepareProof(
     queueProcessing: QueueProcessing,
     miner: Miner,
     copyOfTree: MinerTree,
-    utxos: any,
+    utxos: UtxoBusQueuedEvent[],
+    queueId: number,
     log: LogFn = defaultLog,
-): Promise<any> {
+): Promise<ProofInputs> {
     try {
         return queueProcessing.prepareProofForQueue(
             miner.address,
             copyOfTree,
             utxos,
+            queueId,
         );
     } catch (e) {
         log('Error while preparing proof');
@@ -63,9 +65,7 @@ async function submitProof(
         await miner.mineQueue(
             miner.address,
             BigInt(queueAndUtxos.queue.queueId),
-            proofInputs.newRoot,
-            proofInputs.branchRoot,
-            proofInputs.batchRoot,
+            proofInputs,
             proof,
         );
     } catch (e) {
@@ -178,14 +178,19 @@ async function mineUtxos(
             miner,
             copyOfTree,
             queueAndUtxos.utxos,
+            queueAndUtxos.queue.queueId,
             log,
         );
 
-        const proof = await generateProof(zkProver, proofInputs, log);
+        const [proof, publicSignals] = await generateProof(
+            zkProver,
+            proofInputs,
+            log,
+        );
         logAndCount('Generated proof', miningStats, log);
         miningStats.incrementStats('generatedProof');
 
-        await submitProof(miner, proof, proofInputs, queueAndUtxos, log);
+        await submitProof(miner, proof, publicSignals, queueAndUtxos, log);
         logAndCount('Submitted proof', miningStats, log);
         miningStats.incrementStats('submittedProof');
 
