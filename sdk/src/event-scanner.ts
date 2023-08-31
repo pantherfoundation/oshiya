@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
 
+import type {EventFilter} from 'ethers';
+import {utils} from 'ethers';
+
 import {PantherBusTree} from './contract/bus-tree-types';
 import {initializeReadOnlyBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const PAGE_SIZE = 30; // Amount of blocks to scan at once
+const PAGE_SIZE = 1_000; // Amount of blocks to scan at once
 
 export class EventScanner {
     private contract: PantherBusTree;
-    private eventTopics: any;
     private db: MemCache;
+    private filters: EventFilter[];
     private lastScannedBlock: number;
     private log: LogFn;
 
@@ -24,16 +27,13 @@ export class EventScanner {
         log: LogFn = defaultLog,
     ) {
         this.contract = initializeReadOnlyBusContract(rpcEndpoint, address);
-        this.eventTopics = this.buildEventTopics();
+        this.filters = [
+            this.buildUtxoBusQueuedFilter(),
+            this.buildBusBatchOnboardedFilter(),
+        ];
         this.db = db;
         this.lastScannedBlock = lastScannedBlock;
         this.log = log;
-    }
-
-    private buildEventTopics() {
-        const f1 = this.contract.filters.BusBatchOnboarded();
-        const f2 = this.contract.filters.UtxoBusQueued();
-        return f1.topics!.concat(f2.topics!);
     }
 
     public async scan(): Promise<void> {
@@ -61,35 +61,29 @@ export class EventScanner {
         fromBlock: number,
         toBlock: number,
     ): Promise<void> {
-        const filter = this.buildFilter();
-
         try {
-            const logs = await this.contract.queryFilter(
-                filter,
-                fromBlock,
-                toBlock,
-            );
+            for (const filter of this.filters) {
+                const logs = await this.contract.queryFilter(
+                    filter,
+                    fromBlock,
+                    toBlock,
+                );
 
-            for (const log of logs) {
-                const parsed = this.contract.interface.parseLog(log);
-                if (parsed.name === 'BusBatchOnboarded') {
-                    const eventRecord = this.mapBusBatchOnboardedEvent(parsed);
-                    this.db.storeEventBusBatchOnBoarded(eventRecord);
-                } else if (parsed.name === 'UtxoBusQueued') {
-                    const eventRecord = this.mapUtxoBusQueuedEvent(parsed);
-                    this.db.storeEventUtxoBusQueued(eventRecord);
+                for (const log of logs) {
+                    const parsed = this.contract.interface.parseLog(log);
+                    if (parsed.name === 'BusBatchOnboarded') {
+                        const eventRecord =
+                            this.mapBusBatchOnboardedEvent(parsed);
+                        this.db.storeEventBusBatchOnBoarded(eventRecord);
+                    } else if (parsed.name === 'UtxoBusQueued') {
+                        const eventRecord = this.mapUtxoBusQueuedEvent(parsed);
+                        this.db.storeEventUtxoBusQueued(eventRecord);
+                    }
                 }
             }
         } catch (error: any) {
             this.log(`Error scanning block range: ${error.message}`);
         }
-    }
-
-    private buildFilter() {
-        return this.eventTopics.map((t: any) => ({
-            address: this.contract.address,
-            topics: t,
-        }));
     }
 
     private mapBusBatchOnboardedEvent(
@@ -108,6 +102,23 @@ export class EventScanner {
             branchIndex: leftLeafIndexInBusTree >> 16,
             isInserted: false,
         };
+    }
+
+    private buildEventFilter(eventSignature: string): EventFilter {
+        return {
+            address: this.contract.address,
+            topics: [utils.id(eventSignature)],
+        };
+    }
+
+    private buildUtxoBusQueuedFilter(): EventFilter {
+        return this.buildEventFilter('UtxoBusQueued(bytes32,uint256,uint256)');
+    }
+
+    private buildBusBatchOnboardedFilter(): EventFilter {
+        return this.buildEventFilter(
+            'BusBatchOnboarded(uint256,bytes32,uint256,uint256,bytes32,bytes32)',
+        );
     }
 
     private mapUtxoBusQueuedEvent(parsedLog: any): UtxoBusQueuedEventRecord {
