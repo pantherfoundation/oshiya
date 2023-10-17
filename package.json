@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "build:sdk": "yarn workspace @panther-miner/sdk build",
-    "start:web": "yarn workspace @panther-miner/web-client start"
+    "start:web": "yarn workspace @panther-miner/web-client start",
+    "build:types": "cd sdk/ && ./gen-types.sh"
   },
   "workspaces": {
     "packages": [

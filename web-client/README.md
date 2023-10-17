@@ -2,7 +2,7 @@
 
 ## Deployment
 
-1. Create `.env` file in `web-client/` and environment variables. All enviorment
+1. Create `.env` file in `web-client/` and environment variables. All environment
    variables are optional. Take a look at `.env.example` for for reference.
 
     - `CONTRACT_ADDRESS`: Bus tree contract address
@@ -16,9 +16,11 @@
     nvm use && yarn
     ```
 
-3. Build miner SDK
+3. Build miner SDK and Generate types
 
     ```bash
+    cd sdk/ && ./gen-types.sh
+
     cd sdk/ && yarn build
     ```
 
