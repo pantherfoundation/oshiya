@@ -13,6 +13,7 @@ import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
 import {BusBatchOnboardedEvent, ProofInputs, UtxoBusQueuedEvent} from './types';
 import {ZKProver} from './zk-prover';
+import {assert} from 'console';
 
 async function prepareProof(
     queueProcessing: QueueProcessing,
@@ -97,7 +98,21 @@ async function initializeMinerTree(
 ): Promise<[MinerTree, BusBatchOnboardedEvent[]]> {
     const tree = new MinerTree();
     const subgraph = new Subgraph(subgraphId);
-    const filledBatches = await subgraph.getOnboardedBatches();
+    const filledBranches = await subgraph.getFilledBranches();
+    filledBranches.sort((a, b) => a.branchIndex - b.branchIndex);
+    filledBranches.forEach(branch => {
+        tree.insertFilledBranch(branch);
+    });
+
+    const nextBranchIndex =
+        filledBranches.reduce(
+            (max, branch) => Math.max(max, branch.branchIndex),
+            0,
+        );
+
+    const filledBatches = await subgraph.getOnboardedBatches(
+        nextBranchIndex << 10,
+    );
     filledBatches.sort((a, b) => a.batchIndex - b.batchIndex);
     filledBatches.forEach(batch => tree.insertBatch(batch));
     return [tree, filledBatches];
