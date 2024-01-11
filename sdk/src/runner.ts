@@ -81,14 +81,14 @@ export async function coldStart(
     log('Starting cold start');
     const [tree, filledBatches] = await initializeMinerTree(subgraphId);
     const insertedQueueIds = filledBatches.map(batch => Number(batch.queueId));
-    const lastScannedBlock = await getOldestBlockNumber(subgraphId);
+    const startingBlock = await getOldestBlockNumber(subgraphId);
 
     log(
         `Cold start finished. Start chain scanning from ${
-            isFinite(lastScannedBlock) ? lastScannedBlock : 'genesis'
+            isFinite(startingBlock) ? startingBlock : 'genesis'
         } block`,
     );
-    return [tree, lastScannedBlock, insertedQueueIds];
+    return [tree, startingBlock, insertedQueueIds];
 }
 
 // Initializes MinerTree and returns sorted onboarded batches

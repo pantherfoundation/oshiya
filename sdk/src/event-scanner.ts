@@ -16,13 +16,13 @@ export class EventScanner {
     private contract: PantherBusTree;
     private db: MemCache;
     private filters: EventFilter[];
-    private lastScannedBlock: number;
+    private startingBlock: number;
     private log: LogFn;
 
     constructor(
         rpcEndpoint: string,
         address: string,
-        lastScannedBlock: number,
+        startingBlock: number,
         db: MemCache,
         log: LogFn = defaultLog,
     ) {
@@ -32,7 +32,7 @@ export class EventScanner {
             this.buildBusBatchOnboardedFilter(),
         ];
         this.db = db;
-        this.lastScannedBlock = lastScannedBlock;
+        this.startingBlock = startingBlock;
         this.log = log;
     }
 
@@ -42,15 +42,11 @@ export class EventScanner {
             const currentBlock = Number(
                 await this.contract.provider.getBlockNumber(),
             );
-            for (
-                let i = this.lastScannedBlock + 1;
-                i < currentBlock;
-                i += PAGE_SIZE
-            ) {
+            for (let i = this.startingBlock; i < currentBlock; i += PAGE_SIZE) {
                 const endBlock = Math.min(i + PAGE_SIZE, currentBlock);
                 this.log(`Scanning block range ${i} - ${endBlock}`);
                 await this.scanBlockRangeAndSave(i, endBlock);
-                this.lastScannedBlock = endBlock;
+                this.startingBlock = endBlock;
             }
         } catch (error: any) {
             this.log(`Error scanning: ${error.message}`);
