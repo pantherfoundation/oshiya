@@ -13,6 +13,7 @@ import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
 import {BusBatchOnboardedEvent, ProofInputs, UtxoBusQueuedEvent} from './types';
 import {ZKProver} from './zk-prover';
+import {assert} from 'console';
 
 async function prepareProof(
     queueProcessing: QueueProcessing,
@@ -81,14 +82,14 @@ export async function coldStart(
     log('Starting cold start');
     const [tree, filledBatches] = await initializeMinerTree(subgraphId);
     const insertedQueueIds = filledBatches.map(batch => Number(batch.queueId));
-    const lastScannedBlock = await getOldestBlockNumber(subgraphId);
+    const startingBlock = await getOldestBlockNumber(subgraphId);
 
     log(
         `Cold start finished. Start chain scanning from ${
-            isFinite(lastScannedBlock) ? lastScannedBlock : 'genesis'
+            isFinite(startingBlock) ? startingBlock : 'genesis'
         } block`,
     );
-    return [tree, lastScannedBlock, insertedQueueIds];
+    return [tree, startingBlock, insertedQueueIds];
 }
 
 // Initializes MinerTree and returns sorted onboarded batches
@@ -97,7 +98,21 @@ async function initializeMinerTree(
 ): Promise<[MinerTree, BusBatchOnboardedEvent[]]> {
     const tree = new MinerTree();
     const subgraph = new Subgraph(subgraphId);
-    const filledBatches = await subgraph.getOnboardedBatches();
+    const filledBranches = await subgraph.getFilledBranches();
+    filledBranches.sort((a, b) => a.branchIndex - b.branchIndex);
+    filledBranches.forEach(branch => {
+        tree.insertFilledBranch(branch);
+    });
+
+    const nextBranchIndex =
+        filledBranches.reduce(
+            (max, branch) => Math.max(max, branch.branchIndex),
+            0,
+        );
+
+    const filledBatches = await subgraph.getOnboardedBatches(
+        nextBranchIndex << 10,
+    );
     filledBatches.sort((a, b) => a.batchIndex - b.batchIndex);
     filledBatches.forEach(batch => tree.insertBatch(batch));
     return [tree, filledBatches];

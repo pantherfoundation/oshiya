@@ -53,7 +53,7 @@ export class Subgraph {
         const queryBuilder = new QueryBuilder(
             ['branchIndex', 'busBranchFinalRoot'],
             'busBranchFilleds',
-            'first: 1000',
+            'first: 1000, orderBy: branchIndex, orderDirection: asc',
         );
 
         const data = await this.fetchFromSubgraph(queryBuilder);

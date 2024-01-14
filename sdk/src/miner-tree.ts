@@ -6,7 +6,7 @@ import assert from 'assert';
 import {poseidon} from 'circomlibjs';
 
 import {bigintToBytes32} from './bigint-conversions';
-import {BusBatchOnboardedEvent} from './types';
+import {BranchFilledEvent, BusBatchOnboardedEvent} from './types';
 
 const EMPTY_BATCH =
     '0x2e99dc37b0a4f107b20278c26562b55df197e0b3eb237ec672f4cf729d159b69';
@@ -41,7 +41,7 @@ export class MinerTree {
         this.computeEmptyNodes();
     }
 
-    copy(): MinerTree {
+    public copy(): MinerTree {
         const copiedTree = new MinerTree(this.depth);
         copiedTree.root = this.root;
         copiedTree.prevRoot = this.prevRoot;
@@ -55,45 +55,20 @@ export class MinerTree {
         return copiedTree;
     }
 
-    insertLeaf(leaf: string) {
-        this.leafInd++;
-        if (this.leafInd > 2 ** this.depth) {
-            throw new Error('Leaf index out of range');
-        }
-        this.prevRoot = this.root;
-        this.leaf = leaf;
-        this.root = leaf;
-        let idx = this.leafInd;
-        for (let l = 0; l < this.depth; l++) {
-            const isRightNode = idx & 1;
-            if (isRightNode) {
-                this.siblings[l] = this.filledNodes[l];
-                this.root = bigintToBytes32(
-                    poseidon([this.siblings[l], this.root]),
-                );
-            } else {
-                this.filledNodes[l] = this.root;
-                this.siblings[l] = this.getEmptyNode(l);
-                this.root = bigintToBytes32(
-                    poseidon([this.root, this.siblings[l]]),
-                );
-            }
-
-            if (l == this.depth / 2 - 1) {
-                this.branchRoot = this.root;
-            }
-
-            idx >>= 1;
-        }
+    public insertFilledBranch(filledBranch: BranchFilledEvent): void {
+        this.insertBranch(
+            bigintToBytes32(BigInt(filledBranch.busBranchFinalRoot)),
+            filledBranch.branchIndex,
+        );
     }
 
-    insertBatch(batch: BusBatchOnboardedEvent) {
+    public insertBatch(batch: BusBatchOnboardedEvent): void {
         this.insertLeaf(bigintToBytes32(BigInt(batch.batchRoot)));
-        assert(this.root === batch.busTreeNewRoot, 'Tree root mismatch');
         assert(
             this.branchRoot === batch.busBranchNewRoot,
             'Branch root mismatch',
         );
+        assert(this.root === batch.busTreeNewRoot, 'Tree root mismatch');
     }
 
     private getEmptyNode(level: number): string {
@@ -109,6 +84,60 @@ export class MinerTree {
             );
         }
     }
+
+    private insertBranch(branch: string, branchIdx: number): void {
+        this.leafInd = (branchIdx << 10) - 1;
+        this.root = branch;
+        let nodeIdx = branchIdx;
+        for (let lvl = 10; lvl < this.depth; lvl++) {
+            nodeIdx = this.processNode(nodeIdx, lvl);
+        }
+    }
+
+    public insertLeaf(leaf: string) {
+        this.leafInd++;
+        if (this.leafInd > 2 ** this.depth) {
+            throw new Error('Leaf index out of range');
+        }
+        this.prevRoot = this.root;
+        this.leaf = leaf;
+        this.root = leaf;
+        let nodeIdx = this.leafInd;
+        for (let lvl = 0; lvl < this.depth; lvl++) {
+            nodeIdx = this.processNode(nodeIdx, lvl);
+
+            // Save the root of the branch when we're halfway through the depth
+            if (lvl == this.depth / 2 - 1) {
+                this.branchRoot = this.root;
+            }
+        }
+    }
+
+    /**
+     * This function processes a node at a given depth level and index. It
+     * updates the root, siblings and filledNodes properties of the class based
+     * on whether the node is a right node or not.
+     * @param idx - The index of the node to process
+     * @param lvl - The depth level of the node to process
+     * @returns The updated index
+     */
+    private processNode(idx: number, lvl: number): number {
+        const isRightNode = idx & 1;
+        if (isRightNode) {
+            this.siblings[lvl] = this.filledNodes[lvl];
+            this.root = bigintToBytes32(
+                poseidon([this.siblings[lvl], this.root]),
+            );
+        } else {
+            this.filledNodes[lvl] = this.root;
+            this.siblings[lvl] = this.getEmptyNode(lvl);
+            this.root = bigintToBytes32(
+                poseidon([this.root, this.siblings[lvl]]),
+            );
+        }
+        // Right shift the index for the next iteration
+        return (idx >>= 1);
+    }
 }
 
 export function calculateBatchRoot(utxos: string[]): string {
@@ -116,7 +145,7 @@ export function calculateBatchRoot(utxos: string[]): string {
     while (leaves.length > 1)
         leaves = Array(leaves.length >> 1)
             .fill(0)
-            .map((v: string, i: number) =>
+            .map((_v: string, i: number) =>
                 bigintToBytes32(poseidon([leaves[2 * i], leaves[2 * i + 1]])),
             );
 

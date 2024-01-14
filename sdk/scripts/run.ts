@@ -27,7 +27,7 @@ async function main() {
         join(__dirname, '../src/wasm/pantherBusTreeUpdater_final.zkey'),
     );
 
-    const [tree, lastScannedBlock, insertedQueueIds] = await coldStart(
+    const [tree, startingBlock, insertedQueueIds] = await coldStart(
         env.SUBGRAPH_ID,
     );
 
@@ -35,8 +35,8 @@ async function main() {
     const scanner = new EventScanner(
         env.RPC_URL,
         env.CONTRACT_ADDRESS,
-        isFinite(lastScannedBlock)
-            ? lastScannedBlock
+        isFinite(startingBlock)
+            ? startingBlock
             : env.GENESIS_BLOCK_NUMBER,
         db,
     );
