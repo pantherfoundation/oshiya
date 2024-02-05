@@ -3,7 +3,7 @@
 
 import {ContractReceipt, Wallet, utils} from 'ethers';
 
-import {PantherBusTree} from './contract/bus-tree-types';
+import {BusQueues, PantherBusTree} from './contract/bus-tree-types';
 import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
@@ -57,8 +57,7 @@ export class Miner {
     }
 
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
-        const queues = await this.busContract.getOldestPendingQueues(255);
-        this.log(`Found ${queues.length} queue(s)`);
+        const queues = await this.getPendingQueues();
         const queuesWithMoreThanMinReward = queues.filter(
             q => q.reward.gt(MIN_REWARD) && q.remainingBlocks == 0,
         );
@@ -69,6 +68,18 @@ export class Miner {
             5,
         );
         return getRandomElement(topFive);
+    }
+
+    public async getPendingQueues(): Promise<
+        BusQueues.BusQueueRecStructOutput[]
+    > {
+        const queues = await this.busContract.getOldestPendingQueues(255);
+        this.log(`Found ${queues.length} queue(s)`);
+        return queues;
+    }
+
+    public async hasPendingQueues(): Promise<boolean> {
+        return (await this.getPendingQueues()).length > 0;
     }
 
     public async mineQueue(

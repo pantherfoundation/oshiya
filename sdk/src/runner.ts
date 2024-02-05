@@ -13,7 +13,6 @@ import {QueueProcessing} from './queue-processing';
 import {Subgraph} from './subgraph';
 import {BusBatchOnboardedEvent, ProofInputs, UtxoBusQueuedEvent} from './types';
 import {ZKProver} from './zk-prover';
-import {assert} from 'console';
 
 async function prepareProof(
     queueProcessing: QueueProcessing,
@@ -104,11 +103,10 @@ async function initializeMinerTree(
         tree.insertFilledBranch(branch);
     });
 
-    const nextBranchIndex =
-        filledBranches.reduce(
-            (max, branch) => Math.max(max, branch.branchIndex),
-            0,
-        );
+    const nextBranchIndex = filledBranches.reduce(
+        (max, branch) => Math.max(max, branch.branchIndex),
+        0,
+    );
 
     const filledBatches = await subgraph.getOnboardedBatches(
         nextBranchIndex << 10,
@@ -124,7 +122,7 @@ async function getOldestBlockNumber(subgraphId: string): Promise<number> {
     return subgraph.getOldestBlockNumber();
 }
 
-async function simulateAddUtxos(
+async function simulateAddUtxo(
     miner: Miner,
     miningStats: MiningStats,
     log: LogFn = defaultLog,
@@ -240,8 +238,10 @@ export async function doWork(
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
+    isForceSimulation: boolean = false,
     log: LogFn = defaultLog,
 ): Promise<void> {
+    // Mine UTXOs.
     await mineUtxos(
         miner,
         zkProver,
@@ -251,5 +251,12 @@ export async function doWork(
         log,
     );
 
-    await simulateAddUtxos(miner, miningStats, log);
+    // Determine whether a simulation is needed.
+    const shouldSimulate =
+        isForceSimulation || (await miner.hasPendingQueues());
+
+    // If a simulation is needed, simulate the addition of a UTXO.
+    if (shouldSimulate) {
+        await simulateAddUtxo(miner, miningStats, log);
+    }
 }

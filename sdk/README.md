@@ -77,17 +77,17 @@ docker-compose up --build
 
 
 
-## Configuration
+Configuration
 
-The Panther Miner script requires the following configurations to be set in the
-`.env` file:
+The Panther Miner script needs certain configurations to be set in the `.env` file:
 
--   `RPC_URL`: The URL of the RPC node.
--   `SUBGRAPH_ID`: The ID of the subgraph.
--   `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
--   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
--   `INTERVAL`: The duration between each repetitive execution in seconds.
--   `PRIVATE_KEY`: private key of the wallet that will submit the proofs as a Miner.
+1. `RPC_URL`: This is the URL of the RPC node.
+2. `SUBGRAPH_ID`: This is the ID of the subgraph.
+3. `CONTRACT_ADDRESS`: This is the address of the BusTree Smart Contract.
+4. `GENESIS_BLOCK_NUMBER`: This represents the block number when the BusTree Smart Contract was deployed.
+5. `INTERVAL`: This is the duration between each repetitive execution in seconds.
+6. `PRIVATE_KEY`: This is the private key of the wallet that will submit the proofs as a Miner.
+7. `FORCE_UTXO_SIMULATION`: controls whether the miner should consistently add a simulated UTXO, irrespective of the presence of any pending queues. If this parameter is set to 'false', a simulated UTXO will only be added when a pending queue exists.
 
 ## Contributing
 
