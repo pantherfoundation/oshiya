@@ -35,9 +35,7 @@ async function main() {
     const scanner = new EventScanner(
         env.RPC_URL,
         env.CONTRACT_ADDRESS,
-        isFinite(startingBlock)
-            ? startingBlock
-            : env.GENESIS_BLOCK_NUMBER,
+        isFinite(startingBlock) ? startingBlock : env.GENESIS_BLOCK_NUMBER,
         db,
     );
 
@@ -55,13 +53,12 @@ async function main() {
             batchProcessing,
             queueProcessing,
             miningStats,
+            env.FORCE_UTXO_SIMULATION === 'true',
         );
         log('Work sequence completed. Waiting for next interval.');
         miningStats.printMetrics();
         miningStats.writeToFile();
-        await new Promise(r =>
-            setTimeout(r, Number(process.env.INTERVAL) * 1000),
-        );
+        await new Promise(r => setTimeout(r, Number(env.INTERVAL) * 1000));
     }
 }
 
