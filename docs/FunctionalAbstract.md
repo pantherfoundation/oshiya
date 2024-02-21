@@ -8,7 +8,7 @@ approvedBy:
 
 This documentation serves to provide insight into how an Oshiya node functions. The Oshiya codebase, and this supporting documentation, is publicly available to enable community-driven optimizations.
 
-Oshiya nodes are run by Panther Ecosystem Operaters known as cMiners &mdash; so called because Oshiya mines transactions to the Panther contract that underpins Panther's cross-protocol app layer. cMiners support the protocol by providing a decentralized transaction processing mechanism. 
+Oshiya nodes are run by Panther Ecosystem Operaters known as zMiners &mdash; so called because Oshiya mines transactions to the Panther contract that underpins Panther's cross-protocol app layer. zMiners support the protocol by providing a decentralized transaction processing mechanism. 
 
 
 ## Oshiya functional abstract
