@@ -79,7 +79,11 @@ export class Miner {
     }
 
     public async hasPendingQueues(): Promise<boolean> {
-        return (await this.getPendingQueues()).length > 0;
+        const pendingQueues = await this.getPendingQueues();
+        // Check if there are any pending queues with at least one UTXO
+        return pendingQueues.some(
+            (queue: BusQueues.BusQueueRecStructOutput) => queue.nUtxos > 0,
+        );
     }
 
     public async mineQueue(
