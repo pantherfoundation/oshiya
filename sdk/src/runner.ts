@@ -251,12 +251,36 @@ export async function doWork(
         log,
     );
 
-    // Determine whether a simulation is needed.
-    const shouldSimulate =
-        isForceSimulation || (await miner.hasPendingQueues());
+    // Check if simulation is needed.
+    const shouldSimulate = await checkSimulationNeed(
+        miner,
+        isForceSimulation,
+        log,
+    );
 
     // If a simulation is needed, simulate the addition of a UTXO.
     if (shouldSimulate) {
         await simulateAddUtxo(miner, miningStats, log);
     }
+}
+
+async function checkSimulationNeed(
+    miner: Miner,
+    isForceSimulation: boolean,
+    log: LogFn = defaultLog,
+): Promise<boolean> {
+    const hasPendingQueues = await miner.hasPendingQueues();
+    const shouldSimulate = isForceSimulation || hasPendingQueues;
+
+    log(
+        `Simulation Check - Pending Queues: ${
+            hasPendingQueues ? 'Yes' : 'No'
+        }, ` +
+            `Force Simulation: ${isForceSimulation ? 'Yes' : 'No'}, ` +
+            `Action: Will simulate adding UTXOs: ${
+                shouldSimulate ? 'Yes' : 'No'
+            }`,
+    );
+
+    return shouldSimulate;
 }
