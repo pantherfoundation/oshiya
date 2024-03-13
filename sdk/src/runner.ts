@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: BUSL-1.1
-// SPDX-FileCopyrightText: Copyright 2021-22 Panther Ventures Limited Gibraltar
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
 import {utils} from 'ethers';
 

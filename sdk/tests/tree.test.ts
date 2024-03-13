@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
+
 import {
     calculateBatchRoot,
     calculateDegenerateTreeRoot,

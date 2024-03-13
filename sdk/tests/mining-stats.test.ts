@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
+
 import fs from 'fs';
 
 import {MiningStats} from '../src/mining-stats'; // path to your MiningStats file
