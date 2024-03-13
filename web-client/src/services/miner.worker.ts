@@ -69,6 +69,7 @@ async function handleMining(eventData: MinerClientParams) {
             batchProcessing,
             queueProcessing,
             miningStats,
+            false,
             notify,
         );
         miningStats.printMetrics();
