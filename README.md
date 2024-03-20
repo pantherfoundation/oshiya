@@ -1,11 +1,17 @@
-# Panther Miner
+# Oshiya
 
-The Panther Miner repository houses code specifically developed for the Panther
-Miner, a critical component in the Panther Protocol ecosystem. Its primary
-function is to retrieve pending queues from the BusTree Smart Contract, process
-the data, generate Zero-Knowledge proofs, and submit these proofs back to the
-BusTree Smart Contract. This enables the mining of Unspent Transaction Outputs
-(UTXOs) batches.
+This repository contains the code for the Oshiya component, previously known as
+the "Panther Miner".
+
+The Oshiya's task is, in exchange for rewards, to append commitments to Unspent
+Transaction Outputs (UTXOs) to a Merkle Tree of UTXOs  maintained on a blockchain
+by a specialized Smart Contract called the "BusTree".
+
+Oshiya appends UTXOs in batches, of up to 64 UTXOs at once, providing a SNARK-proof
+that justifies validity of the batch and correctness of the batch insertion.
+
+This efficient process of building the Merkle Tree enhances the performance of
+the Panther Protocol.
 
 ## Repository Structure
 
@@ -42,5 +48,5 @@ build a stronger Panther ecosystem together!
 
 ## License
 
-Panther Miner is licensed under the BUSL License. For more details, please see
+Panther Miner is licensed under the MIT License. For more details, please see
 the [LICENSE](/LICENSE) file.
