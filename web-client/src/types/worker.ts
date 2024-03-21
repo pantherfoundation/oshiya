@@ -10,4 +10,7 @@ export type MinerClientParams = {
     interval: number;
     privateKey: string;
     rpcUrl: string;
+    address: string;
+    subgraphId: string;
+    genesisBlockNumber: string;
 };

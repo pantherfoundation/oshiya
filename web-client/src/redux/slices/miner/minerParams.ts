@@ -5,6 +5,9 @@ const initialState: MinerClientParams = {
     interval: 10,
     privateKey: '',
     rpcUrl: '',
+    address: '',
+    subgraphId: '',
+    genesisBlockNumber: '',
 };
 
 const minerParamsSlice = createSlice({

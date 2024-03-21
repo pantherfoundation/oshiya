@@ -24,10 +24,16 @@ const MinerClientParamsForm = () => {
         interval: string;
         privateKey: string;
         rpcUrl: string;
+        address: string;
+        subgraphId: string;
+        genesisBlockNumber: string;
     }>({
         interval: '20',
         privateKey: '',
         rpcUrl: env.RPC_URL || '',
+        address: env.CONTRACT_ADDRESS || '',
+        subgraphId: env.SUBGRAPH_ID || '',
+        genesisBlockNumber: env.GENESIS_BLOCK_NUMBER || '',
     });
 
     function updateStateHandler(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -67,13 +73,42 @@ const MinerClientParamsForm = () => {
     return (
         <div>
             <div>
-                <div className="mb-4">
-                    <Input
-                        label="Interval (in seconds)"
-                        value={state.interval}
-                        name="interval"
-                        onChange={updateStateHandler}
-                    />
+                <div className="flex items-end justify-between space-x-5 mb-4">
+                    <div className="w-full">
+                        <Input
+                            label="Contract Address"
+                            value={state.address}
+                            name="address"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <Input
+                            label="Subgraph ID"
+                            value={state.subgraphId}
+                            name="subgraphId"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-end justify-between space-x-5 mb-4">
+                    <div className="w-full">
+                        <Input
+                            label="Interval (in seconds)"
+                            value={state.interval}
+                            name="interval"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <Input
+                            label="Starting Block Number"
+                            value={state.genesisBlockNumber}
+                            name="genesisBlockNumber"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
                 </div>
                 <div className="flex items-end justify-between space-x-5 mb-4">
                     <div className="w-full">
@@ -119,6 +154,9 @@ const MinerClientParamsForm = () => {
                             interval,
                             privateKey: state.privateKey,
                             rpcUrl: state.rpcUrl,
+                            address: state.address,
+                            subgraphId: state.subgraphId,
+                            genesisBlockNumber: state.genesisBlockNumber,
                         };
                         dispatch(updateMiningStatus(MiningStatus.Starting));
                         workerManager.startMining(params);
