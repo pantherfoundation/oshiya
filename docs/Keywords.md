@@ -14,9 +14,10 @@ approvedBy:
 
     *Inserting* - the process of adding a 'batch' of up to 64 legitimate UTXOs into the Merkle Tree.
 
-    *Mining* - Appending of UTXOs to form a queue, and this queue's insertion of into the smart contract as a standalone procedure.
+    *Dummy* - a placeholder UTXO used to fill a queue up.
 
-    *Queue* - a group of UTXOs held in storage on chain.
+    *SNARK* - succinct non-interactive argument of knowledge, used to prove the legitimacy of a batch being inserted.
 
+    *SC* - Smart Contract.
 
-
+    *MT* - Merkle Tree.
