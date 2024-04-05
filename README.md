@@ -39,6 +39,7 @@ configuration parameters:
 -   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
 -   `INTERVAL`: The time (in seconds) between each successive execution.
 -   `PRIVATE_KEY`: The private key of the wallet that will submit the proofs as a Miner.
+-   `FORCE_UTXO_SIMULATION`: controls whether the miner should consistently add a simulated UTXO, irrespective of the presence of any pending queues. If this parameter is set to 'false', a simulated UTXO will only be added when a pending queue exists.
 
 ## Contributing
 
