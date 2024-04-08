@@ -1,0 +1,46 @@
+@startuml Interchain
+!pragma teoz true
+
+title Oshiya Process Flow
+
+actor Operator as O
+box "Oshiya (SDK or Web)" #LightYellow
+participant "Client" as C
+end box
+box "Subgraph" #LightPink
+    database Subgraph as SG
+end box
+box "Blockchain Contracts" #LightBlue
+    database BusTree as BT
+    database Verifier as V
+    database PantherPool as PP
+end box
+actor User as U
+
+U -> PP: Transacts
+PP -> BT: Adds UTXO in current queue
+O -> C: Initialize
+
+group#LightGreen Cold Start
+    C -> SG: Query latest state
+    SG --> C: Roots of\n latest subtrees and \n leaves of active\n branch
+    C -> C: Build Miner Tree
+end
+
+BT --> C: Listen for\n BusBatchOnboarded\n events
+C -> BT: Request oldest pending queues
+BT --> C: Queues
+C -> C: Create proof and\n calculate updated root
+C -> BT: Submit proof & updated root
+BT -> V: Verify proof
+V --> BT: Return bool
+BT -> PP: Update root
+BT -> BT: Remove queue\n from storage
+BT --> BT: emit\n BusBatchOnboarded\n event
+BT -> C: Reward
+
+
+
+
+
+@enduml

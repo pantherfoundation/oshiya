@@ -33,12 +33,13 @@ Both versions of Panther Miner require certain configuration settings, which can
 be defined in a `.env` file or through the web interface. Here are the necessary
 configuration parameters:
 
-- `RPC_URL`: The URL of the RPC node.
-- `SUBGRAPH_ID`: The ID of the subgraph.
-- `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
-- `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
-- `INTERVAL`: The time (in seconds) between each successive execution.
-- `PRIVATE_KEY`: The private key of the wallet that will submit the proofs as a Miner.
+-   `RPC_URL`: The URL of the RPC node.
+-   `SUBGRAPH_ID`: The ID of the subgraph.
+-   `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
+-   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
+-   `INTERVAL`: The time (in seconds) between each successive execution.
+-   `PRIVATE_KEY`: The private key of the wallet that will submit the proofs as a Miner.
+-   `FORCE_UTXO_SIMULATION`: controls whether the miner should consistently add a simulated UTXO, irrespective of the presence of any pending queues. If this parameter is set to 'false', a simulated UTXO will only be added when a pending queue exists.
 
 ## Contributing
 
@@ -50,3 +51,7 @@ build a stronger Panther ecosystem together!
 
 Panther Miner is licensed under the MIT License. For more details, please see
 the [LICENSE](/LICENSE) file.
+
+## Learn More
+
+To learn more about Panther Protocol, visit this repo's [documentation](/docs/FunctionalAbstract.md).
