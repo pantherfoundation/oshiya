@@ -15,3 +15,5 @@
     *SC* - Smart Contract.
 
     *MT* - Merkle Tree.
+
+    *UTXO* - Unspent Transaction Output.
