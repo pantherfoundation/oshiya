@@ -1,7 +1,6 @@
 @startuml Interchain
 !pragma teoz true
 
-<<<<<<< HEAD
 title Oshiya Process Flow
 
 actor Operator as O
@@ -28,60 +27,22 @@ group#LightGreen Cold Start
     C -> C: Build Miner Tree
 end
 
-BT --> C: Listen for\n BusBatchOnboarded\n events
+BT <--> C: Listen for\n BusBatchOnboarded\n events
 C -> BT: Request oldest pending queues
-BT --> C: Queues
+BT --> C: Queues returned
+C --> C: Batch formed from queue\n in the form of binary tree
 C -> C: Create proof and\n calculate updated root
 C -> BT: Submit proof & updated root
 BT -> V: Verify proof
 V --> BT: Return bool
-BT -> PP: Update root
+BT --> BT: Update Bus root
+BT -> PP: Update Forest root
 BT -> BT: Remove queue\n from storage
 BT --> BT: emit\n BusBatchOnboarded\n event
 BT -> C: Reward
-=======
-title Oshiya Interchain Flow
-
-actor Operator as O
-box "Oshiya (SDK or Web)" #LightYellow
-participant "Cold Start" as CS
-participant "Client" as C
-participant "Wallet" as W
-end box
-box "Blockchain Contracts" #LightBlue
-    database PantherPool as PP
-    database BusTree as BT
-    database Verifier as V
-    database BusQueues as BQ
-end box
-box "Sub-Graph" #LightPink
-    database SubGraph as SG
-end box
-actor User as U
-
-U --> PP: Transacts
-PP --> BQ: Adds UTXO as leaf to degen tree
-O --> CS: Initialize
-CS --> SG: Query subgraph & return roots of latest subtrees
-SG --> C: Build Tree
-C --> BQ: Find oldest pending queues
-C --> C: Create proof
-C --> W: Call blockchain
-W --> BT: Submit proof & root
-BT --> V: Verify proof
-V --> PP: Return bool
-PP --> BT: Update root
-BT --> BQ: Remove queue from storage
-BT --> C: BusBatchOnboarded event
-PP --> W: Reward
->>>>>>> 1ffa568 (feat(docs): adding Process Flow inc. diagram)
 
 
 
 
 
-<<<<<<< HEAD
 @enduml
-=======
-@enduml
->>>>>>> 1ffa568 (feat(docs): adding Process Flow inc. diagram)
