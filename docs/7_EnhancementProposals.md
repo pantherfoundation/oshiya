@@ -1,17 +1,17 @@
 # Enhancement Proposals
 
 Protocol/Team Proposals
-The following proposals have been provided by key members of the protocol. The areas in which Oshiya may be optimised is not restricted to these areas alone: further/innovative optimisations are still viable for a BONUS reward.
+The following proposals have been provided by key members of the protocol. The areas in which Oshiya may be optimised is not restricted to these areas alone: further/innovative optimisations are still viable for a **BONUS** reward.
 
-Enhancements make be implemented in 3 main functional areas:
+Enhancements may be implemented in 3 main functional areas:
 
--   Core SDK, which provides utility to the zMiner
--   UI, which currently provides a browser-based interface to operate Oshiya
--   Overall Improvements, i.e. the non-niche elements of Oshiya
+-   Core SDK: Providing enhanced functionality, advanced utilities and intuitive error handling
+-   UI: A browser-based interface for operators of Oshiya, this should include an attractive, cutting edge interface, advanced statistics and a potential browser extension
+-   Overall Improvements: Here, better architecture is invited to be proposed, which may include a complete overhaul and/or refactoring.
 
-While these are natural segregations of the Oshiya service, optimizations to each of these 3 areas may not be mutually exclusive: i.e. where one issue manifests in a multitude of forms, making the segmentation of functional areas somewhat arbitary. Therefore, alternative segregations and cross-feature optimizations are welcomed.
+Although Core SDK, UI, and Overall Improvements are distinct areas of Oshiya, enhancements in these areas may overlap.
 
-The following areas for improvement have been identified:
+Specific areas for improvement have been identified internally, as follows:
 
 1. Miner-client/SDK
 
@@ -19,12 +19,12 @@ The following areas for improvement have been identified:
 
 **MEDIUM**
 
-**Background**: Currently, Oshiya retrieves all pending UTXOs from on-chain events and processes them in a semi-random election process. This is effective, however some people may wish to process their own transactions.
+_Background_: Currently, Oshiya retrieves all pending UTXOs from on-chain events and processes them in a semi-random election process. This is effective, however some people may wish to process their own transactions.
 
 _Proposal_: Produce a ‘nominate transactions to process’ feature, allowing a user to nominate a queue ID from a drop down menu or via direct injection on Oshiya.
 
 -   UI: Frontend UI elements to include are: search bar, drop down menu, switchover button (between standard or nominator modes).
--   Events Retrieval: This method will require specific branch(es) being returned from the search. This will require implementation of a specifically designed events scanner which returns all queued batches, from which the corresponding queue ID can be chosen.
+-   Events Retrieval: This method will require specific branch(es) being returned from the search. This will require implementation of a specially designed events scanner which returns all queued batches, from which the corresponding queue ID can be chosen.
 -   Stop/Begin Oshiya: Since there are two modes of operation, consider that the ‘live events scanner’ (part of the core architecture) will need to be stopped to allow for the user’s Oshiya to mine said specified transactions. This start/stop process should self initiate (ergo, keep the UJ to a minimum).
 
 _Advantages_:
@@ -41,7 +41,7 @@ _Implementation Considerations_:
 
 **LOW**
 
-**Background**: Oshiya’s current cold start process relies exclusively on BusBatchOnboarded events from the subgraph. This approach misses out on utilizing UtxoBusQueued events, leading to an inefficient scanning of Ethereum logs from a point further in the past than necessary.
+_Background_: Oshiya’s current cold start process relies exclusively on BusBatchOnboarded events from the subgraph. This approach misses out on utilizing UtxoBusQueued events, leading to an inefficient scanning of Ethereum logs from a point further in the past than necessary.
 
 _Proposal_: Enhance the cold start mechanism by incorporating a memory cache (MemCache) system that utilizes UtxoBusQueued events. This can be achieved through the following:
 
@@ -139,7 +139,7 @@ _Background_: Statistics, covering only proof status and zMining success/failure
 _Proposal_: Implement a statistical monitoring client, for both local and global use, which allows monitoring of the effectiveness of Oshiya and for potentially pinpointing of system flaws over the duration of its implementation. This should include data from the genesis block, and scrape the chain periodically/under a trigger (e.g. event/emit from SC).
 
 -   Time to process queue: Time taken, from last UtxoBusqueued with a specific queueId to BusBatchOnboarded.
-    Number of UTXOs processed: Each BusBatchOnboarded event contains data for the number of UTXOs contained in the queue (whilst the number is <= 64, it can be less, where empty leaves are hashed in place of other potential entries).
+-   Number of UTXOs processed: Each BusBatchOnboarded event contains data for the number of UTXOs contained in the queue (whilst the number is <= 64, it can be less, where empty leaves are hashed in place of other potential entries).
 -   RPC response time: Time taken from RPC request to retrieval of data, along with errors experienced per RPC call. This shouldn’t vary much, but may give insight to avoidable bugs that are difficult to sense in small testing timeframes vs. large implementation run times, thereby potentially providing room for further optimization.
 -   Rewards: Reward obtained per queue, along with number of queues processed, to provide averaged data. Consider implementing time-based records as well, as this may give insight to peak and trough times for the protocol.
 -   Number of Registered zMiners: zMiner address is emitted with each BusBatchOnboarded event. Retrieve all zMiner addresses to provide a monitor on network activity.
@@ -155,7 +155,7 @@ _Implementation Consideration_
 
 -   Github Actions: Base the software on a platform such as GitHub and utilise GitHub Actions to initiate collection of data dependent on an event trigger.
 -   Web Sockets: Web Sockets can be used to retrieve live data and ensure an up to date statistical record.
-    Infura/Alchemy & Scope of Panther: Ensure that logs do not inadvertently capture sensitive information, maintaining the system's security and user privacy.
+-   Infura/Alchemy & Scope of Panther: Ensure that logs do not inadvertently capture sensitive information, maintaining the system's security and user privacy.
 -   UI Interfacing: Ensure the client provides datasets in a readable format (e.g. JSON) for frontend (or backend) interfacing.
 -   Privacy: Whilst individual performance metrics are attainable (e.g. zMiner who received the most/least rewards, etc), these shouldn’t necessarily be formally collected, as zMiners will likely appreciate a degree of privacy.
 -   Multi-chain: This should only scrape Polygon Mumbai for now, but be adaptable.
@@ -168,14 +168,14 @@ _Background_: There exists known errors in operation of Oshiya which lead to its
 
 _Proposal_: Mitigate these breakdowns of function through proper error handling, possibly via timeout implementations on promise/await/async functions.
 
--   RPC, Private key & Matic in EOA: A check should be done at the initiation of Oshiya to ensure that, if all else functions properly, the software is actually able to write data to the BusTree stack. This requires proper definition of environment variables, specifically the RPC node and private key. Also, the EOA should have a MATIC balance of >10 $MATIC.
--   Tree Root Mismatch: The Tree Root Mismatch error arises occasionallywhen running the web client. Oshiya continues to run indefinitely, whilst submissions are continually unsuccessful. This requires a manual/’hard restart’ (CLI code denoted below), which can be automated
+-   RPC, Private key & Matic in EOA: A check should be done at the initiation of Oshiya to ensure that the software is actually able to write data to the BusTree stack. This requires proper definition of environment variables, specifically the RPC node and private key. Also, the EOA should have a MATIC balance of >10 $MATIC.
+-   Tree Root Mismatch: The Tree Root Mismatch error arises occasionally when running the web client. Oshiya continues to run indefinitely, whilst submissions are continually unsuccessful. This requires a manual/’hard restart’ (CLI code denoted below), which can be automated.
 -   Events scanner unsynced: On occasion, the events scanner becomes unsynced with the network, resulting in rejected submissions of roots and thus requiring a manual/’hard reset’, which again can be automated.
--   Other Errors: The manner in which errors listed hitherto can be corrected present some form of continuity. Utilize this to mitigate (if not fully, at least partially) other errors which may require manual interaction to reboot Oshiya.
+-   Other Errors: The manner in which errors listed can be corrected present some form of continuity. Utilize this to mitigate (if not fully, at least partially) other errors which may require manual interaction to reboot Oshiya.
 
 _Advantages_
 
--   Better performance: Reduced critical errors mean more continuous mining, resulting in a more reliable and streamlined network.
+-   Better performance: Reduced critical errors mean more continuous mining, resulting in a more reliable and streamlined protocol function and zMiner yield.
 -   Hands-off operation: The software should be initiated and left, providing a smooth user experience whilst maintaining consistent rewards/profits.
 
 _Implementation Considerations_:
@@ -202,15 +202,15 @@ _Proposal_: Produce an enhanced browser-based UI design, operating from mobile-f
 -   Apply Panther brand: Ensure the resulting interface compliments the established design of Panther’s main website to ensure consistency.
 -   Interactive Elements: Utilise hover, transitions, transforms, box shadows and other advanced CSS elements to produce a responsive design.
 -   Color pallette: Consider and largely mimic the existing color palette of Panther.
-    Mobile first: Ensure that, although the application should be designed for browser, the resultant framework operates well on mobile-sized screens and devices. This provides for potential future adoption of a mobile based application.
+-   Mobile first: Ensure that, although the application should be designed for browser, the resultant framework operates well on mobile-sized screens and devices. This provides for potential future adoption of a mobile based application.
 -   Cutting edge: Consider utilising TouchDesigner or other visual programming software to bring a cutting edge feel to the interface.
 -   User journey: Ensure the user journey is intuitive considering both desired function and the access to/reading of logs.
--   **BONUS** browser extension: Produce the framework, or derived framework, that allows Oshiya to be run as a browser extension. The app should boot quickly and, if in extension, should accommodate automatic initiation when a browser is opened.
+-   **BONUS** Browser Extension: Produce the framework, or derived framework, that allows Oshiya to be run as a browser extension. The app should boot quickly and, if in extension, should accommodate automatic initiation when a browser is opened.
 
 _Advantages_
 
 -   Attractive: zMiners yield rewards for their work. The product itself should have an attractive presentation.
--   Intuitive: Individual elements which make up Oshiyta’s function should be clearly readable, in clean-cut containers with an intuitive UI.
+-   Intuitive: Individual elements which make up Oshiya’s function should be clearly readable, in clean-cut containers with an intuitive UI.
 -   Easy access: Automatic start on browser launch means a truly hands-off approach to zMining, yielding an easy route for the community to support the network and achieve consistently quick transaction times.
 
 _Implementation Consideration_
