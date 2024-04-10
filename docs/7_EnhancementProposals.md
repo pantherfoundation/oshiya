@@ -1,21 +1,22 @@
 # Enhancement Proposals
 
-Protocol/Team Proposals
+## Protocol/Team Proposals
+
 The following proposals have been provided by key members of the protocol. The areas in which Oshiya may be optimised is not restricted to these areas alone: further/innovative optimisations are still viable for a **BONUS** reward.
 
-Enhancements may be implemented in 3 main functional areas:
+Enhancements may be implemented in 3 main areas:
 
 -   Core SDK: Providing enhanced functionality, advanced utilities and intuitive error handling
 -   UI: A browser-based interface for operators of Oshiya, this should include an attractive, cutting edge interface, advanced statistics and a potential browser extension
--   Overall Improvements: Here, better architecture is invited to be proposed, which may include a complete overhaul and/or refactoring.
+-   Overall Improvements: Aside containerisation, better architecture is invited to be proposed, which may include a complete overhaul and/or refactor.
 
 Although Core SDK, UI, and Overall Improvements are distinct areas of Oshiya, enhancements in these areas may overlap.
 
 Specific areas for improvement have been identified internally, as follows:
 
-1. Miner-client/SDK
+### Miner-client/SDK
 
-### Transaction Nomination
+1. Transaction Nomination
 
 **MEDIUM**
 
@@ -37,7 +38,7 @@ _Implementation Considerations_:
 -   UX & flow: Since Oshiya will have two modes of operation, ensure that switching between standard or nominator modes implements a clean transition.
 -   Parallel zMiners: If a zMiner processes the queue in parallel, i.e. while another zMiner is processing the nominated queue, the process should halt. If the zMiner wishes to restart the auto-mine process, it should be done so explicitly.
 
-### Cold start process
+2. Cold Start Process
 
 **LOW**
 
@@ -58,7 +59,7 @@ _Implementation Considerations_:
 -   Integration with Existing Architecture: The new MemCache system should be seamlessly integrated with the existing Oshiya infrastructure: ensuring that it does not interfere with other processes.
 -   Reliability and Testing: Rigorous testing is essential to confirm that the integration of the MemCache system and the utilization of UtxoBusQueued events enhance the cold start process without introducing new vulnerabilities or inefficiencies.
 
-### Scalability optimization
+3. Scalability Optimization
 
 **MEDIUM**
 
@@ -81,7 +82,7 @@ _Implementation Considerations_:
 -   Latency: Ensure the time required to load a second (+1) queue is less than the time taken to register, halt, and restart the appending process.
 -   Time Handling: Utilize promises and await to effectively streamline the function of the zMiner in times of poor RPC response time and other unwanted errors.
 
-### Event Handling
+4. Event Handling
 
 **LOW**
 
@@ -105,7 +106,7 @@ _Implementation Considerations_:
 -   Compatibility and integration: Careful integration with the existing Oshiya system is crucial, ensuring that the transition to event listening does not disrupt other functionalities.
 -   Extensive testing: Rigorous testing is needed to ensure that the event listening system, along with its fallback and confirmation mechanisms, operates reliably and accurately under various conditions.
 
-### Enhanced Logging System
+5. Enhanced Logging System
 
 **MEDIUM**
 
@@ -130,7 +131,7 @@ _Implementation Considerations_
 -   Performance impact: Assess the impact of the enhanced logging on the system’s performance, ensuring it remains lightweight and efficient.
 -   Security and privacy: Ensure that logs do not inadvertently capture sensitive information, maintaining the system's security and user privacy.
 
-### Records for Statistics
+6. Records for Statistics
 
 **MEDIUM**
 
@@ -160,7 +161,7 @@ _Implementation Consideration_
 -   Privacy: Whilst individual performance metrics are attainable (e.g. zMiner who received the most/least rewards, etc), these shouldn’t necessarily be formally collected, as zMiners will likely appreciate a degree of privacy.
 -   Multi-chain: This should only scrape Polygon Mumbai for now, but be adaptable.
 
-### Enhanced Error Handling
+7. Enhanced Error Handling
 
 **LOW**
 
@@ -189,9 +190,9 @@ Hard Reset
 `&&`
 `yarn start`
 
-2. UI
+### UI
 
-### Web App Improvements
+1. Web App Improvements
 
 **HIGH**
 
@@ -218,7 +219,7 @@ _Implementation Consideration_
 -   Lightweight: The lighter the software package, the quicker it boots.
 -   Performance impact: Ensure the data files (e.g. images) and responsiveness don’t produce high latency/laggy interface, and ensure any errors in processing are suitably dealt with (e.g. loading bars, etc).
 
-### Statistics Interface
+2. Statistics Interface
 
 **MEDIUM**
 
@@ -243,7 +244,7 @@ _Implementation Considerations_:
 -   Pagination: Over time, the data set contained will become large. Consider paginating datas, or utilising adaptable graph packages to ensure the page doesn’t experience overloading and affect system performance.
 -   Intricacy of UI: This is not a retail-focused Web App: prioritize utility over looks.
 
-3. Docker/Containerisation
+### Docker/Containerisation
 
 **LOW**
 _Background_: While the current Docker file operates, it doesn’t accommodate advanced functionalities of Docker to produce a streamlined build.
@@ -259,10 +260,11 @@ _Advantages_
 -   Streamlined deployment: Optimising the Dockerization process will result in a more efficient deployment pipeline, reducing the time and resources required for application deployment.
 -   Reduced image size: By implementing best practices and leveraging multi-stage builds, we aim to minimise the final - Docker image size. This is crucial for faster image pull times and efficient resource utilisation.
 
-4. Out of Scope
-   **BONUS**
+### Out of Scope
 
-_Background_: There is a possibility that at least a significant part of this architecture would benefit from a complete overhaul, addressing topics that are outside of the scope of Enhancement \_Proposal_s mentioned hitherto.
+**BONUS**
+
+_Background_: There is a possibility that at least a significant part of this architecture would benefit from a complete overhaul, addressing topics that are potentially outside of the scope of Enhancement Proposals mentioned hitherto.
 
 _Proposal_: Re-design the Oshiya architecture to provide a notably more effective miner.
 

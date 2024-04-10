@@ -6,7 +6,7 @@ This document proposes an incentive programme to be submitted for consideration 
 
 ## Outcome of Community Enhancement
 
-The outcome of this community driven initiative should be an effective Oshiya software architecture, which appropriately handles errors whilst providing an optimized revenue stream to zMiners while supporting continuous function. Furthermore, an intuitive UI should be produced for both the Oshiya web client and for monitoring of statistics, both from individual and internal (together global) points of view.
+The outcome of this community driven initiative should be an effective Oshiya software architecture, which appropriately handles errors whilst providing an optimized revenue stream to zMiners while supporting continuous function. Furthermore, an intuitive UI should be produced for both the Oshiya web client and for monitoring of statistics, both from external and internal viewpoints.
 
 The Oshiya software should be designed for easy use, minimizing the necessary user interactions — allowing non-technical zMiners to participate and support future versions of the Protocol.
 
