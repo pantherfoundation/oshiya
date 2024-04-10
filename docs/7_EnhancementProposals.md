@@ -204,8 +204,8 @@ _Proposal_: Produce an enhanced browser-based UI design, operating from mobile-f
 -   Interactive Elements: Utilise hover, transitions, transforms, box shadows and other advanced CSS elements to produce a responsive design.
 -   Color pallette: Consider and largely mimic the existing color palette of Panther.
 -   Mobile first: Ensure that, although the application should be designed for browser, the resultant framework operates well on mobile-sized screens and devices. This provides for potential future adoption of a mobile based application.
--   Cutting edge: Consider utilising TouchDesigner or other visual programming software to bring a cutting edge feel to the interface.
--   User journey: Ensure the user journey is intuitive considering both desired function and the access to/reading of logs.
+-   Cutting edge: Consider utilising TouchDesigner [(https://derivative.ca/)], After Effects [(https://www.adobe.com/uk/products/aftereffects.html)] or other visual programming software to bring a cutting edge feel to the interface.
+-   User journey: Ensure the user journey is intuitive considering both desired function and the access to/reading of logs and statistics history.
 -   **BONUS** Browser Extension: Produce the framework, or derived framework, that allows Oshiya to be run as a browser extension. The app should boot quickly and, if in extension, should accommodate automatic initiation when a browser is opened.
 
 _Advantages_
