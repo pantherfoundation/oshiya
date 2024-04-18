@@ -4,7 +4,7 @@ This repository contains the code for the Oshiya component, previously known as
 the "Panther Miner".
 
 The Oshiya's task is, in exchange for rewards, to append commitments to Unspent
-Transaction Outputs (UTXOs) to a Merkle Tree of UTXOs  maintained on a blockchain
+Transaction Outputs (UTXOs) to a Merkle Tree of UTXOs maintained on a blockchain
 by a specialized Smart Contract called the "BusTree".
 
 Oshiya appends UTXOs in batches, of up to 64 UTXOs at once, providing a SNARK-proof
@@ -51,6 +51,10 @@ build a stronger Panther ecosystem together!
 
 Panther Miner is licensed under the MIT License. For more details, please see
 the [LICENSE](/LICENSE) file.
+
+## Learn More
+
+To learn more about Panther Protocol, visit this repo's [documentation](/docs/FunctionalAbstract.md).
 
 ## Learn More
 

@@ -27,14 +27,16 @@ group#LightGreen Cold Start
     C -> C: Build Miner Tree
 end
 
-BT --> C: Listen for\n BusBatchOnboarded\n events
+BT <--> C: Listen for\n BusBatchOnboarded\n events
 C -> BT: Request oldest pending queues
-BT --> C: Queues
+BT --> C: Queues returned
+C --> C: Batch formed from queue\n in the form of binary tree
 C -> C: Create proof and\n calculate updated root
 C -> BT: Submit proof & updated root
 BT -> V: Verify proof
 V --> BT: Return bool
-BT -> PP: Update root
+BT --> BT: Update Bus root
+BT -> PP: Update Forest root
 BT -> BT: Remove queue\n from storage
 BT --> BT: emit\n BusBatchOnboarded\n event
 BT -> C: Reward
