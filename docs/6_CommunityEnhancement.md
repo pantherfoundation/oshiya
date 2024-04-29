@@ -2,7 +2,7 @@
 
 While this implementation of Oshiya functions in a rudimentary sense, the architecture is sluggish and prone to some functional flaws.
 
-This document proposes an incentive programme to be submitted for consideration by the Panther Foundation.
+This document proposes an incentive program to be submitted for consideration by the Panther Foundation.
 
 ## Outcome of Community Enhancement
 
@@ -14,9 +14,9 @@ Furthermore, the UI should be inviting and statistics should be clean and clear,
 
 ### Nota Bene
 
-Importantly, Oshiya must be designed to support the user's ability to self process their own UTXOs and write them on-chain from within the dApp. This means that the software should be able to handle the user's UTXOs as an input after some refactoring, creating proofs for submission to the network post processing. **Note that this requirement is not part of the outlined proposal, and is not expected to be integrated by the community in this optimisation.** However, it's integration should not be hindered by the proposed enhancements.
+Importantly, Oshiya must be designed to support the user's ability to self process their own UTXOs and write them on-chain from within the dApp. This means that the software should be able to handle the user's UTXOs as an input after some refactoring, creating proofs for submission to the network post processing. **Note that this requirement is not part of the outlined proposal, and is not expected to be integrated by the community in this optimization.** However, it's integration should not be hindered by the proposed enhancements.
 
-## Proposed Incentive Scheme
+## Proposed incentive scheme
 
 This optimization will be run for a share of a $ZKP worth **$15,000USDT** in the reward pool. These rewards will be split according to the complexity of the proposal completed, seen assigned aside each Enhancement Proposal.
 
@@ -29,26 +29,26 @@ Complexity Approximations
 **HIGH** Significant time investment and/or complex task
 
 **BONUS** Scope is open ended and features multiple inter dependencies. Resulting award will be rewarded according to complexity approximation of resulting software.
-**CREDITS** Each and every submission will be considered thoroughly. If a good solution is provided but isn’t elected for a prize, the protocol may still provide credits in $ZKP form for the work.
+**CREDITS** Each and every submission will be considered thoroughly. If a good solution is provided but isn't elected for a prize, the protocol may still provide credits in $ZKP form for the work.
 
 ## Rewards per Complexity
 
-**LOW** $ZKP worth $500, 4 instances identified
-**MEDIUM** $ZKP worth $1,000, 5 instances identified
-**HIGH** $ZKP worth $1,500, 1 instance identified
-**BONUS** $ZKP worth $5,000, to be distributed according to work submitted, 1 instance identified
-**CREDITS** $ZKP worth $250, for unsuccessful but impressive submissions
+- **LOW** $ZKP worth $500
+- **MEDIUM** $ZKP worth $1,000
+- **HIGH** $ZKP worth $1,500
+- **BONUS** $ZKP worth $5,000, to be distributed according to work submitted
+- **CREDITS** $ZKP worth $250, for unsuccessful but impressive submissions
 
 ## Developer Profile
 
 _SDK_
-Developers with experience in back end, Node.js[(https://nodejs.org/en)], and/or Typescript[(https://www.typescriptlang.org/)] are suitable for optimization of the SDK scripts.
+Developers with experience in back end, [Node.js](https://nodejs.org/en), and/or [Typescript](https://www.typescriptlang.org/) are suitable for optimization of the SDK scripts.
 
 _UI_
-Developers with React[(https://react.dev/)], Next.js[(https://nextjs.org/)] and Web/Graphic Design experience are suitable for optimization of the UI elements.
+Developers with [React](https://react.dev/), [Next.js](https://nextjs.org/) and Web/Graphic Design experience are suitable for optimization of the UI elements.
 
 _Containerization_
-Further, those with Docker[(https://www.docker.com/)] experience will find routes in ensuring cross compatibility for Oshiya in all runtime environments.
+Further, those with [Docker](https://www.docker.com/) experience will find routes in ensuring cross compatibility for Oshiya in all runtime environments.
 
 _Other_
 It is worth noting that any exposure to blockchain/distributed ledger technology and/or zero-knowledge cryptography would stand as an advantage in completing this challenge to a high standard.
