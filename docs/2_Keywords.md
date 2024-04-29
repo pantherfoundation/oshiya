@@ -1,37 +1,40 @@
 # Keywords
 
-    *Oshiya* - a software that allows users to run a node and receive rewards for verifying UTXOs.
+*Appending* &mdash; the process of adding  UTXOs to a queue on chain.
 
-    *zMiner* - an individual running the Oshiya software, receiving rewards to a wallet address.
+*Batch* &mdash; a binary tree of 64 elements (depth 6) containing up to 64 UTXOs.
 
-    *Queue* - the root of a degenerate tree formed from a group of up to 64 verified UTXOs.
+*Dummy* &mdash; a placeholder UTXO used to fill a queue up.
 
-    *Batch* - a binary tree of 64 elements (depth 6) containing up to 64 UTXOs.
+*Inserting* &mdash; the process of adding a 'batch' of up to 64 legitimate UTXOs into the Merkle Tree.
 
-    *Appending* - the process of adding  UTXOs to a queue on chain.
+*MASP* &mdash; Multi-asset Shielded Pool
 
-    *Inserting* - the process of adding a 'batch' of up to 64 legitimate UTXOs into the Merkle Tree.
+*Memcache* &mdash; a cache that stores data in memory.
 
-    *Dummy* - a placeholder UTXO used to fill a queue up.
+*MT* &mdash; Merkle Tree.
 
-    *SNARK* - succinct non-interactive argument of knowledge, used to prove the legitimacy of a batch being inserted.
+*Oshiya* &mdash; Software that allows users to run a node and receive rewards for verifying Unspent Transaction Outputs, UTXOs.
 
-    *SC* - Smart Contract.
+*Queue* &mdash; the root of a degenerate tree formed from a group of up to 64 verified UTXOs.
 
-    *MT* - Merkle Tree.
+*RPC* &mdash; Remote Procedure Call.
 
-    *UTXO* - Unspent Transaction Output.
+*SC* &mdash; Smart Contract.
 
-    *RPC* - Remote Procedure Call.
+*SDK* &mdash; Software Development Kit.
 
-    *Subgraph* - a collection of data on the blockchain.
+*SNARK* &mdash; succinct non-interactive argument of knowledge, used to prove the legitimacy of a batch being inserted.
 
-    *Memcache* - a cache that stores data in memory.
+*Subgraph* &mdash; a collection of data on the blockchain.
 
-    *Stack* - A set of contracts inherited by the named contract.
+*Stack* &mdash; A set of contracts inherited by the named contract.
 
-    *UI* - User Interface.
+*UI* &mdash; User Interface.
 
-    *UJ* - User Journey.
+*UJ* &mdash; User Journey.
 
-    *SDK* - Software Development Kit.
+[*UTXO*](https://docs.pantherprotocol.io/docs/learn/utxos) &mdash; Unspent Transaction Output.
+
+[*zMiner*](https://docs.pantherprotocol.io/docs/ecosystem/ecosystem-operators/zminer) &mdash; an individual running the Oshiya software, receiving rewards to a wallet address.
+

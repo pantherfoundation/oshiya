@@ -15,23 +15,16 @@ the Panther Protocol.
 
 ## Repository Structure
 
-This repository is structured into two main workspaces: SDK and web-client.
+This repository is structured into code and [docs](docs/1_Introduction.md). The code is divided into two main workspaces: 
 
-1. **SDK Workspace**: This workspace houses the miner's core code. For running
-   the miner without a UI, you can use a terminal and Docker. Detailed
-   instructions are available in the [SDK Readme](./sdk/README.md) file.
+- SDK Workspace: This workspace houses the miner's core code. For running the miner without a UI, you can use a terminal and Docker. Detailed instructions are available in the [SDK Readme](sdk/README.md) file.
 
-2. **Web-client Workspace**: This workspace contains the code for running the
-   miner in a browser. It includes a basic React-based UI and a web worker
-   running in the background, which becomes operational once the user inputs the
-   necessary configuration data. For deploying your version of the UI, refer to
-   the instructions provided in the [web-client Readme](./sdk/README.md) file.
+- Web-client Workspace: This workspace contains the code for running the miner in a browser. It includes a basic React-based UI and a web worker running in the background, which becomes operational once the user inputs the necessary configuration data. For deploying your version of the UI, refer to the instructions provided in the [web-client Readme](web-client/README.md) file.
+
 
 ## Configuration
 
-Both versions of Panther Miner require certain configuration settings, which can
-be defined in a `.env` file or through the web interface. Here are the necessary
-configuration parameters:
+Both versions of Oshiya require certain configuration settings, which can be defined in a `.env` file or through the web interface. Here are the necessary configuration parameters:
 
 -   `RPC_URL`: The URL of the RPC node.
 -   `SUBGRAPH_ID`: The ID of the subgraph.
@@ -43,19 +36,14 @@ configuration parameters:
 
 ## Contributing
 
-We appreciate your contributions! If you discover any issues or have suggestions
-for improvements, feel free to open an issue or submit a pull request. Let's
-build a stronger Panther ecosystem together!
+We appreciate your contributions! If you discover any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. Let's build a stronger Panther ecosystem together!
+
+A [community enhancement incentive program](docs/6_CommunityEnhancement.md) is being developed, if this receives approval by the DAO, then submission of the proposed improvements will be rewarded according to the assessment criteria.
+
+## Learn More
+
+To learn more about Panther Protocol, visit this repo's [documentation](/docs/Introduction.md), or learn more about the Panther Ecosystem from the [public-facing documentation](https://docs.pantherprotocol.io/docs).
 
 ## License
 
-Panther Miner is licensed under the MIT License. For more details, please see
-the [LICENSE](/LICENSE) file.
-
-## Learn More
-
-To learn more about Panther Protocol, visit this repo's [documentation](/docs/FunctionalAbstract.md).
-
-## Learn More
-
-To learn more about Panther Protocol, visit this repo's [documentation](/docs/FunctionalAbstract.md).
+Panther Miner is licensed under the MIT License. For more details, please see the [LICENSE](/LICENSE) file.
