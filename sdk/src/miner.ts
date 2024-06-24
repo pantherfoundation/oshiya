@@ -9,6 +9,10 @@ import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
 const MIN_REWARD = utils.parseEther('1');
+// We need to hardcode these values because the latest supported version of
+// ethers 5.7.2 doesn't correctly estimate them.
+const MAX_PRIORITY_FEE_PER_GAS = 30_000_000_000; // 30 gwei
+const MAX_FEE_PER_GAS = 30 + MAX_PRIORITY_FEE_PER_GAS;
 
 function selectHighestN<T>(
     array: Array<T>,
@@ -99,6 +103,8 @@ export class Miner {
             proof,
             {
                 gasLimit: 1_000_000,
+                maxFeePerGas: MAX_FEE_PER_GAS,
+                maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
             },
         );
         this.log(`Submitted tx ${tx.hash}`);
@@ -108,6 +114,8 @@ export class Miner {
     public async simulateAddUtxosToBusQueue(): Promise<ContractReceipt> {
         const tx = await this.busContract.simulateAddUtxosToBusQueue({
             gasLimit: 500_000,
+            maxFeePerGas: MAX_FEE_PER_GAS,
+            maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
         });
         this.log(`Submitted tx ${tx.hash} for generating random utxos`);
         return tx.wait();
