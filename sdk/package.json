@@ -28,7 +28,7 @@
     "big-integer": "^1.6.51",
     "circomlibjs": "^0.0.8",
     "dotenv": "^16.3.1",
-    "ethers": "^5.5.1",
+    "ethers": "^5.7.2",
     "lodash": "^4.17.21",
     "snarkjs": "^0.4.10",
     "ts-node": "^10.9.1"
