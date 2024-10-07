@@ -57,16 +57,19 @@ yarn start
 ```
 
 ## Docker Installation
+
 To run the Panther Miner in a Docker container, perform the following steps:
 
 1. Build the Docker image:
+
 ```bash
 docker build -t miner-app .
 ```
 
 2. Then run the image:
+
 ```bash
-docker run miner-app
+docker run miner-app start
 ```
 
 Or use docker-compose:
@@ -75,9 +78,52 @@ Or use docker-compose:
 docker-compose up --build
 ```
 
+## Claiming rewards
 
+You can use following scripts:
 
-Configuration
+1. Claiming reward without signature:
+
+```bash
+yarn claimReward -r <receiverAddress> -a <PantherTreesContractAddress> --pk <privateKey> --rpc <rpcEndpoint>
+```
+
+2. Claiming reward with signature:
+
+-   You will need a JSON file containing signature. File content will look like this: {"signature": "<yourSignature>"}. If you don't have the existing file, you can generate it with the following script:
+
+```bash
+yarn generate:signature -o <outputDirectoryToStoreSignature> --rpc <rpcEndpoint> --pk <privateKey>
+```
+
+-   To claim reward with a signature:
+
+```bash
+yarn claimRewardWithSignature -s <pathToSignatureContainingJsonFile> --rpc <rpcEndpoint> --pk <privateKey> -a <PantherTreesContractAddress> -r <receiverAddress>
+```
+
+## Claiming Rewards via Docker
+
+**Applied after you have built docker image via `docker build -t miner-app .` command:**
+
+1. Claim reward
+```bash
+docker run claimReward -r <receiverAddress> -a <PantherTreesContractAddress> --pk <privateKey> --rpc <rpcEndpoint>
+```
+
+2. Claim reward with signature
+
+- Generate a signature.json file (replace `yourLocalePathToOshiyaFolder` with your local path)
+```bash
+docker run -v /<yourLocalePathToOshiyaFolder>/oshiya/sdk:/app miner-app generate:signature -o /app --pk <privateKey> --rpc <rpcEndpoint>
+```
+
+- To claim reward with signature you need to drag your signature.json file into the root of sdk folder, then run the script:
+```bash
+docker run -v /<yourLocalePathToOshiyaFolder>/oshiya/sdk:/app miner-app claimRewardWithSignature -s signature.json --pk <privateKey> --rpc <rpcEndpoint> -r <receiverAddress> -a <PantherTreesContractAddress>
+```
+
+## Configuration
 
 The Panther Miner script needs certain configurations to be set in the `.env` file:
 
