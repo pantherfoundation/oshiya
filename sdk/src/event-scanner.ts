@@ -4,7 +4,7 @@
 import type {EventFilter} from 'ethers';
 import {utils} from 'ethers';
 
-import {PantherBusTree} from './contract/bus-tree-types';
+import {ForestTree} from './contract/forest-types';
 import {initializeReadOnlyBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
@@ -13,7 +13,7 @@ import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 const PAGE_SIZE = 1_000; // Amount of blocks to scan at once
 
 export class EventScanner {
-    private contract: PantherBusTree;
+    private contract: ForestTree;
     private db: MemCache;
     private filters: EventFilter[];
     private startingBlock: number;
@@ -42,16 +42,25 @@ export class EventScanner {
             const currentBlock = Number(
                 await this.contract.provider.getBlockNumber(),
             );
+            const totalBlocks = currentBlock - this.startingBlock;
+            let scannedBlocks = 0;
+
             for (let i = this.startingBlock; i < currentBlock; i += PAGE_SIZE) {
                 const endBlock = Math.min(i + PAGE_SIZE, currentBlock);
-                this.log(`Scanning block range ${i} - ${endBlock}`);
+                const progress = Math.floor((scannedBlocks / totalBlocks) * 100);
+                this.log(`Scanning block range ${i} - ${endBlock} [${progress}%]`);
                 await this.scanBlockRangeAndSave(i, endBlock);
                 this.startingBlock = endBlock;
+                scannedBlocks += endBlock - i;
             }
+
+            this.log('Scan completed [100%]');
         } catch (error: any) {
             this.log(`Error scanning: ${error.message}`);
         }
     }
+
+
 
     private async scanBlockRangeAndSave(
         fromBlock: number,

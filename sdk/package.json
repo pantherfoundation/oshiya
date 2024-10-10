@@ -1,6 +1,6 @@
 {
   "name": "@panther-miner/sdk",
-  "version": "0.0.1",
+  "version": "0.8.8",
   "repository": "git@gitlab.com:pantherprotocol/tech-team/miner-client.git",
   "author": "Panther Tech Team",
   "license": "SEE LICENSE IN ../LICENSE",

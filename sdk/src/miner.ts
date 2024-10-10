@@ -3,12 +3,11 @@
 
 import {ContractReceipt, Wallet, utils} from 'ethers';
 
-import {BusQueues, PantherBusTree} from './contract/bus-tree-types';
+import {BusQueues, ForestTree} from './contract/forest-types';
 import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
-const MIN_REWARD = utils.parseEther('1');
 // We need to hardcode these values because the latest supported version of
 // ethers 5.7.2 doesn't correctly estimate them.
 const MAX_PRIORITY_FEE_PER_GAS = 30_000_000_000; // 30 gwei
@@ -40,19 +39,21 @@ function getRandomElement<T>(array: Array<T>): T {
 
 export class Miner {
     public readonly address: string;
-    private readonly busContract: PantherBusTree;
-
+    private readonly forestContract: ForestTree;
+    private readonly minReward: string;
     private log: LogFn;
 
     constructor(
         privKey: string,
         rpcURL: string,
         contractAddress: string,
+        minReward: string,
         log: LogFn = defaultLog,
     ) {
         const wallet = new Wallet(privKey);
         this.address = wallet.address;
-        this.busContract = initializeBusContract(
+        this.minReward = minReward;
+        this.forestContract = initializeBusContract(
             wallet,
             rpcURL,
             contractAddress,
@@ -63,7 +64,9 @@ export class Miner {
     public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
         const queues = await this.getPendingQueues();
         const queuesWithMoreThanMinReward = queues.filter(
-            q => q.reward.gt(MIN_REWARD) && q.remainingBlocks == 0,
+            q =>
+                q.reward.gt(utils.parseEther(this.minReward)) &&
+                q.remainingBlocks == 0,
         );
         const topFive = selectHighestN(
             queuesWithMoreThanMinReward,
@@ -77,7 +80,7 @@ export class Miner {
     public async getPendingQueues(): Promise<
         BusQueues.BusQueueRecStructOutput[]
     > {
-        const queues = await this.busContract.getOldestPendingQueues(255);
+        const queues = await this.forestContract.getOldestPendingQueues(255);
         this.log(`Found ${queues.length} queue(s)`);
         return queues;
     }
@@ -96,7 +99,7 @@ export class Miner {
         publicSignals: any,
         proof: any,
     ): Promise<ContractReceipt> {
-        const tx = await this.busContract.onboardQueue(
+        const tx = await this.forestContract.onboardBusQueue(
             minerAddress,
             queueId,
             publicSignals,
@@ -112,7 +115,7 @@ export class Miner {
     }
 
     public async simulateAddUtxosToBusQueue(): Promise<ContractReceipt> {
-        const tx = await this.busContract.simulateAddUtxosToBusQueue({
+        const tx = await this.forestContract.simulateAddUtxosToBusQueue({
             gasLimit: 500_000,
             maxFeePerGas: MAX_FEE_PER_GAS,
             maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
@@ -122,6 +125,6 @@ export class Miner {
     }
 
     public async getBusTreeRoot(): Promise<string> {
-        return await this.busContract.getRoot();
+        return await this.forestContract.getBusTreeRoot();
     }
 }

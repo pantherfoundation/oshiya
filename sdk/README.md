@@ -87,7 +87,7 @@ The Panther Miner script needs certain configurations to be set in the `.env` fi
 4. `GENESIS_BLOCK_NUMBER`: This represents the block number when the BusTree Smart Contract was deployed.
 5. `INTERVAL`: This is the duration between each repetitive execution in seconds.
 6. `PRIVATE_KEY`: This is the private key of the wallet that will submit the proofs as a Miner.
-7. `FORCE_UTXO_SIMULATION`: controls whether the miner should consistently add a simulated UTXO, irrespective of the presence of any pending queues. If this parameter is set to 'false', a simulated UTXO will only be added when a pending queue exists.
+7. `MIN_REWARD`: This is the minimum reward that the Miner will submit the proofs for.
 
 ## Contributing
 

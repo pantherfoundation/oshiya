@@ -67,6 +67,7 @@ export type EnvVariables = {
     SUBGRAPH_ID: string;
     GENESIS_BLOCK_NUMBER: number;
     FORCE_UTXO_SIMULATION: string;
+    MIN_REWARD: string;
 };
 
 export type ProofInputs = {
