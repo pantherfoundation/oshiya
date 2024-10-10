@@ -12,5 +12,6 @@ export type MinerClientParams = {
     rpcUrl: string;
     address: string;
     subgraphId: string;
-    genesisBlockNumber: string;
+    genesisBlockNumber: number;
+    minReward: string;
 };

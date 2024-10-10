@@ -27,6 +27,7 @@ const MinerClientParamsForm = () => {
         address: string;
         subgraphId: string;
         genesisBlockNumber: string;
+        minReward: string;
     }>({
         interval: '20',
         privateKey: '',
@@ -34,6 +35,7 @@ const MinerClientParamsForm = () => {
         address: env.CONTRACT_ADDRESS || '',
         subgraphId: env.SUBGRAPH_ID || '',
         genesisBlockNumber: env.GENESIS_BLOCK_NUMBER || '',
+        minReward: env.MIN_REWARD || '0.001',
     });
 
     function updateStateHandler(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -42,21 +44,56 @@ const MinerClientParamsForm = () => {
     }
 
     function isValidState(): [boolean, string | null] {
-        if (!state.interval) return [false, 'Interval field is required'];
-        const interval = Number(state.interval);
+        const validations = [
+            {condition: !state.interval, message: 'Interval field is required'},
+            {
+                condition: Number.isNaN(Number(state.interval)),
+                message: 'Invalid interval. It must be a valid number',
+            },
+            {
+                condition: Number(state.interval) <= 0,
+                message: 'Invalid interval. Must be a positive integer',
+            },
+            {
+                condition: !state.genesisBlockNumber,
+                message: 'Genesis block number field is required',
+            },
+            {
+                condition: Number.isNaN(Number(state.genesisBlockNumber)),
+                message: 'Invalid genesis block number. Must be a valid number',
+            },
+            {
+                condition: !state.minReward,
+                message: 'Minimum reward field is required',
+            },
+            {
+                condition: Number.isNaN(Number(state.minReward)),
+                message: 'Invalid minimum reward. Must be a valid number',
+            },
+            {
+                condition: !state.privateKey,
+                message: 'Private key field is required',
+            },
+            {condition: !state.rpcUrl, message: 'RPC URL field is required'},
+            {
+                condition: !isValidHttpUrl(state.rpcUrl),
+                message: 'Invalid RPC URL. Must be a valid HTTP(s) URL',
+            },
+            {
+                condition: !state.address,
+                message: 'Contract address field is required',
+            },
+            {
+                condition: !state.subgraphId,
+                message: 'Subgraph ID field is required',
+            },
+        ];
 
-        if (Number.isNaN(interval))
-            return [false, 'Invalid interval. It must be a valid number'];
-
-        if (interval <= 0)
-            return [false, 'Invalid interval. Must be a positive integers'];
-
-        if (!state.privateKey) return [false, 'Private key field is required'];
-
-        if (!state.rpcUrl) return [false, 'RPC URL field is required'];
-
-        if (!isValidHttpUrl(state.rpcUrl))
-            return [false, 'Invalid RPC URL. Must be a valid HTTP(s) URL'];
+        for (const validation of validations) {
+            if (validation.condition) {
+                return [false, validation.message];
+            }
+        }
 
         return [true, null];
     }
@@ -129,12 +166,24 @@ const MinerClientParamsForm = () => {
                         </Button>
                     </div>
                 </div>
-                <Input
-                    label="RPC URL"
-                    value={state.rpcUrl}
-                    name="rpcUrl"
-                    onChange={updateStateHandler}
-                />
+                <div className="flex items-end justify-between space-x-5 mb-4">
+                    <div className="w-full">
+                        <Input
+                            label="RPC URL"
+                            value={state.rpcUrl}
+                            name="rpcUrl"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <Input
+                            label="Minimum Reward"
+                            value={state.minReward}
+                            name="minReward"
+                            onChange={updateStateHandler}
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="mt-4 flex space-x-4">
@@ -150,13 +199,18 @@ const MinerClientParamsForm = () => {
                         if (!isValid) return alert(error);
 
                         const interval = Number(state.interval);
+                        const genesisBlockNumber = Number(
+                            state.genesisBlockNumber,
+                        );
+
                         const params = {
                             interval,
                             privateKey: state.privateKey,
                             rpcUrl: state.rpcUrl,
                             address: state.address,
                             subgraphId: state.subgraphId,
-                            genesisBlockNumber: state.genesisBlockNumber,
+                            genesisBlockNumber,
+                            minReward: state.minReward,
                         };
                         dispatch(updateMiningStatus(MiningStatus.Starting));
                         workerManager.startMining(params);

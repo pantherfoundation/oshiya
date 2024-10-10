@@ -42,6 +42,7 @@ async function handleMining(eventData: MinerClientParams) {
         address,
         subgraphId,
         genesisBlockNumber,
+        minReward,
     } = eventData;
 
     // Initialize and set up all necessary components for the mining process
@@ -60,7 +61,7 @@ async function handleMining(eventData: MinerClientParams) {
         db,
         notify,
     );
-    const miner = new Miner(privateKey, rpcUrl, address, notify);
+    const miner = new Miner(privateKey, rpcUrl, address, minReward, notify);
     const zkProver = new ZKProver(
         'pantherBusTreeUpdater.wasm',
         'pantherBusTreeUpdater_final.zkey',

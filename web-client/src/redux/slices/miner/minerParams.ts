@@ -7,7 +7,8 @@ const initialState: MinerClientParams = {
     rpcUrl: '',
     address: '',
     subgraphId: '',
-    genesisBlockNumber: '',
+    genesisBlockNumber: 0,
+    minReward: '0.001',
 };
 
 const minerParamsSlice = createSlice({
