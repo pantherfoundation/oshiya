@@ -59,7 +59,6 @@ async function main() {
             batchProcessing,
             queueProcessing,
             miningStats,
-            env.FORCE_UTXO_SIMULATION === 'true',
         );
         log('Work sequence completed. Waiting for next interval.');
         miningStats.printMetrics();

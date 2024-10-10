@@ -12,7 +12,6 @@ export const requiredVars: Array<keyof EnvVariables> = [
     'CONTRACT_ADDRESS',
     'SUBGRAPH_ID',
     'GENESIS_BLOCK_NUMBER',
-    'FORCE_UTXO_SIMULATION',
     'MIN_REWARD',
 ];
 

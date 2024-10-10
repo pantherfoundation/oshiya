@@ -130,24 +130,6 @@ async function getOldestBlockNumber(
     return subgraph.getOldestBlockNumber();
 }
 
-async function simulateAddUtxo(
-    miner: Miner,
-    miningStats: MiningStats,
-    log: LogFn = defaultLog,
-) {
-    try {
-        await miner.simulateAddUtxosToBusQueue();
-        logAndCount('Inserted UTXOs.', miningStats, log);
-        logAndCount(
-            'Checking and updating inserted batches.',
-            miningStats,
-            log,
-        );
-    } catch (e: any) {
-        console.error(e);
-    }
-}
-
 async function mineUtxos(
     miner: Miner,
     zkProver: ZKProver,
@@ -246,7 +228,6 @@ export async function doWork(
     batchProcessing: BatchProcessing,
     queueProcessing: QueueProcessing,
     miningStats: MiningStats,
-    isForceSimulation: boolean = false,
     log: LogFn = defaultLog,
 ): Promise<void> {
     // Mine UTXOs.
@@ -258,37 +239,4 @@ export async function doWork(
         miningStats,
         log,
     );
-
-    // Check if simulation is needed.
-    const shouldSimulate = await checkSimulationNeed(
-        miner,
-        isForceSimulation,
-        log,
-    );
-
-    // If a simulation is needed, simulate the addition of a UTXO.
-    if (shouldSimulate) {
-        await simulateAddUtxo(miner, miningStats, log);
-    }
-}
-
-async function checkSimulationNeed(
-    miner: Miner,
-    isForceSimulation: boolean,
-    log: LogFn = defaultLog,
-): Promise<boolean> {
-    const hasPendingQueues = await miner.hasPendingQueues();
-    const shouldSimulate = isForceSimulation || hasPendingQueues;
-
-    log(
-        `Simulation Check - Pending Queues: ${
-            hasPendingQueues ? 'Yes' : 'No'
-        }, ` +
-            `Force Simulation: ${isForceSimulation ? 'Yes' : 'No'}, ` +
-            `Action: Will simulate adding UTXOs: ${
-                shouldSimulate ? 'Yes' : 'No'
-            }`,
-    );
-
-    return shouldSimulate;
 }

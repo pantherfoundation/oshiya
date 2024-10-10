@@ -114,16 +114,6 @@ export class Miner {
         return await tx.wait();
     }
 
-    public async simulateAddUtxosToBusQueue(): Promise<ContractReceipt> {
-        const tx = await this.forestContract.simulateAddUtxosToBusQueue({
-            gasLimit: 500_000,
-            maxFeePerGas: MAX_FEE_PER_GAS,
-            maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
-        });
-        this.log(`Submitted tx ${tx.hash} for generating random utxos`);
-        return tx.wait();
-    }
-
     public async getBusTreeRoot(): Promise<string> {
         return await this.forestContract.getBusTreeRoot();
     }
