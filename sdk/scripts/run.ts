@@ -20,8 +20,13 @@ dotenv.config({path: resolve(__dirname, '../.env')});
 
 async function main() {
     const env = parseEnvVariables(process.env);
-    logSettings(env);
-    const miner = new Miner(env.PRIVATE_KEY, env.RPC_URL, env.CONTRACT_ADDRESS);
+    await logSettings(env);
+    const miner = new Miner(
+        env.PRIVATE_KEY,
+        env.RPC_URL,
+        env.CONTRACT_ADDRESS,
+        env.MIN_REWARD,
+    );
     const zkProver = new ZKProver(
         join(__dirname, '../src/wasm/pantherBusTreeUpdater.wasm'),
         join(__dirname, '../src/wasm/pantherBusTreeUpdater_final.zkey'),
@@ -29,13 +34,14 @@ async function main() {
 
     const [tree, startingBlock, insertedQueueIds] = await coldStart(
         env.SUBGRAPH_ID,
+        env.GENESIS_BLOCK_NUMBER,
     );
 
     const db = new MemCache(insertedQueueIds);
     const scanner = new EventScanner(
         env.RPC_URL,
         env.CONTRACT_ADDRESS,
-        isFinite(startingBlock) ? startingBlock : env.GENESIS_BLOCK_NUMBER,
+        startingBlock,
         db,
     );
 
@@ -53,7 +59,6 @@ async function main() {
             batchProcessing,
             queueProcessing,
             miningStats,
-            env.FORCE_UTXO_SIMULATION === 'true',
         );
         log('Work sequence completed. Waiting for next interval.');
         miningStats.printMetrics();

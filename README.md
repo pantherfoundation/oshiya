@@ -15,7 +15,7 @@ the Panther Protocol.
 
 ## Repository Structure
 
-This repository is structured into code and [docs](docs/1_Introduction.md). The code is divided into two main workspaces: 
+This repository is structured into code and [docs](docs/1_Introduction.md). The code is divided into two main workspaces:
 
 - SDK Workspace: This workspace houses the miner's core code. For running the miner without a UI, you can use a terminal and Docker. Detailed instructions are available in the [SDK Readme](sdk/README.md) file.
 
@@ -32,7 +32,7 @@ Both versions of Oshiya require certain configuration settings, which can be def
 -   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
 -   `INTERVAL`: The time (in seconds) between each successive execution.
 -   `PRIVATE_KEY`: The private key of the wallet that will submit the proofs as a Miner.
--   `FORCE_UTXO_SIMULATION`: controls whether the miner should consistently add a simulated UTXO, irrespective of the presence of any pending queues. If this parameter is set to 'false', a simulated UTXO will only be added when a pending queue exists.
+-   `MIN_REWARD`: The minimum reward for a queue to be considered for mining.
 
 ## Contributing
 

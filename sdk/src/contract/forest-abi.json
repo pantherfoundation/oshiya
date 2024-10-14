@@ -3,7 +3,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "utxoInserter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "feeMaster",
         "type": "address"
       },
       {
@@ -12,19 +17,9 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "_pantherPool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_verifier",
-        "type": "address"
-      },
-      {
-        "internalType": "uint160",
-        "name": "_circuitId",
-        "type": "uint160"
+        "internalType": "uint8",
+        "name": "miningRewardVersion",
+        "type": "uint8"
       }
     ],
     "stateMutability": "nonpayable",
@@ -167,12 +162,18 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "usage",
-        "type": "uint256"
+        "internalType": "int112",
+        "name": "updatedNetRewardReserve",
+        "type": "int112"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint112",
+        "name": "allocated",
+        "type": "uint112"
       }
     ],
-    "name": "BusQueueRewardReserveUsed",
+    "name": "BusQueueRewardReserveAllocated",
     "type": "event"
   },
   {
@@ -180,17 +181,54 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "extraReseve",
-        "type": "uint256"
+        "internalType": "int112",
+        "name": "updatedNetRewardReserve",
+        "type": "int112"
       }
     ],
-    "name": "BusQueueRewardReserved",
+    "name": "BusQueueRewardReserveUpdated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "leafIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "updatedLeaf",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "updatedRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "cacheIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "ForestRootUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "queueId",
+        "type": "uint32"
+      },
       {
         "indexed": false,
         "internalType": "address",
@@ -204,7 +242,83 @@
         "type": "uint256"
       }
     ],
-    "name": "MinerRewarded",
+    "name": "MinerRewardAccounted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "timestamp",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "miner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinerRewardClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "updatedRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "numLeaves",
+        "type": "uint256"
+      }
+    ],
+    "name": "TaxiRootUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "subtreeRoot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaxiSubtreeRootUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "utxo",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalUtxoInsertions",
+        "type": "uint256"
+      }
+    ],
+    "name": "TaxiUtxoAdded",
     "type": "event"
   },
   {
@@ -234,12 +348,12 @@
   },
   {
     "inputs": [],
-    "name": "CIRCUIT_ID",
+    "name": "CLAIM_MINING_REWARD_VERSION",
     "outputs": [
       {
-        "internalType": "uint160",
+        "internalType": "uint8",
         "name": "",
-        "type": "uint160"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -247,7 +361,7 @@
   },
   {
     "inputs": [],
-    "name": "OWNER",
+    "name": "FEE_MASTER",
     "outputs": [
       {
         "internalType": "address",
@@ -260,7 +374,7 @@
   },
   {
     "inputs": [],
-    "name": "PANTHER_POOL",
+    "name": "REWARD_RESERVE_ALLOCATOR",
     "outputs": [
       {
         "internalType": "address",
@@ -286,7 +400,7 @@
   },
   {
     "inputs": [],
-    "name": "START_TIME",
+    "name": "UNDEFINED_CACHE_INDEX",
     "outputs": [
       {
         "internalType": "uint256",
@@ -298,48 +412,26 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "VERIFIER",
-    "outputs": [
-      {
-        "internalType": "contract IPantherVerifier",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "utxo",
-        "type": "bytes32"
-      }
-    ],
-    "name": "addUtxoToBusQueue",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "queueId",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint8",
-        "name": "indexInQueue",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32[]",
         "name": "utxos",
         "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cachedForestRootIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "forestRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "staticRoot",
+        "type": "bytes32"
       },
       {
         "internalType": "uint96",
@@ -364,13 +456,75 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "basePerUtxoReward",
-    "outputs": [
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "utxos",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint8",
+        "name": "numTaxiUtxos",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cachedForestRootIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "forestRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "staticRoot",
+        "type": "bytes32"
+      },
       {
         "internalType": "uint96",
-        "name": "",
+        "name": "reward",
         "type": "uint96"
+      }
+    ],
+    "name": "addUtxosToBusQueueAndTaxiTree",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "firstUtxoQueueId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "firstUtxoIndexInQueue",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint112",
+        "name": "allocated",
+        "type": "uint112"
+      }
+    ],
+    "name": "allocateRewardReserve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "busTreeStartTime",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -379,22 +533,58 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_timestamp",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      }
+    ],
+    "name": "claimMiningReward",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
       },
       {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      }
+    ],
+    "name": "claimMiningRewardWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
-        "name": "_utxoCounter",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "getAllowedUtxosAt",
+    "name": "forestLeafs",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "allowedUtxos",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -479,11 +669,19 @@
         "internalType": "uint32",
         "name": "oldestPendingQueueId",
         "type": "uint32"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBusTreeRoot",
+    "outputs": [
       {
-        "internalType": "uint96",
-        "name": "rewardReserve",
-        "type": "uint96"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -515,6 +713,50 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCacheStats",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numRootsCached",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "latestCacheIndex",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCachedPrimarySubtreeRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getFerryTreeRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -603,12 +845,95 @@
   },
   {
     "inputs": [],
-    "name": "getRoot",
+    "name": "getRoots",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_staticRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_forestRoot",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTaxiTreeRoot",
     "outputs": [
       {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint160",
+        "name": "onboardingQueueCircuitId",
+        "type": "uint160"
+      },
+      {
+        "internalType": "uint16",
+        "name": "reservationRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "premiumRate",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "minEmptyQueueAge",
+        "type": "uint16"
+      }
+    ],
+    "name": "initializeForestTrees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "root",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cacheIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "isCachedRoot",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isCached",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "netRewardReserve",
+    "outputs": [
+      {
+        "internalType": "int112",
+        "name": "",
+        "type": "int112"
       }
     ],
     "stateMutability": "view",
@@ -690,19 +1015,38 @@
         "type": "tuple"
       }
     ],
-    "name": "onboardQueue",
+    "name": "onboardBusQueue",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "perMinuteUtxosLimit",
+    "name": "onboardingQueueCircuitId",
     "outputs": [
       {
-        "internalType": "uint16",
+        "internalType": "uint160",
         "name": "",
-        "type": "uint16"
+        "type": "uint160"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "rewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -710,23 +1054,19 @@
   },
   {
     "inputs": [],
-    "name": "simulateAddUtxosToBusQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "totalLeavesInsertions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "uint16",
-        "name": "_perMinuteUtxosLimit",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint96",
-        "name": "_basePerUtxoReward",
-        "type": "uint96"
-      },
       {
         "internalType": "uint16",
         "name": "reservationRate",
@@ -743,7 +1083,7 @@
         "type": "uint16"
       }
     ],
-    "name": "updateParams",
+    "name": "updateBusQueueRewardParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

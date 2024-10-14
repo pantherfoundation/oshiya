@@ -111,13 +111,13 @@ export class Subgraph {
         return fetchedData;
     }
 
-    public async getOldestBlockNumber(): Promise<number> {
+    public async getOldestBlockNumber(): Promise<number | null> {
         const queryBuilder = new QueryBuilder(
             ['blockNumber'],
             'busQueueOpeneds',
             `where: {isOnboarded: false}, orderBy: blockNumber, orderDirection: asc, first: 1`,
         );
         const data = await this.fetchFromSubgraph(queryBuilder);
-        return Number(data.busQueueOpeneds[0].blockNumber);
+        return Number(data.busQueueOpeneds[0]?.blockNumber || null);
     }
 }
