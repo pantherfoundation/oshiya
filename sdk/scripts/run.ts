@@ -28,8 +28,8 @@ async function main() {
         env.MIN_REWARD,
     );
     const zkProver = new ZKProver(
-        join(__dirname, '../src/wasm/pantherBusTreeUpdater.wasm'),
-        join(__dirname, '../src/wasm/pantherBusTreeUpdater_final.zkey'),
+        join(__dirname, '../src/wasm/circuits.wasm'),
+        join(__dirname, '../src/wasm/provingKey.zkey'),
     );
 
     const [tree, startingBlock, insertedQueueIds] = await coldStart(
