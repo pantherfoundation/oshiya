@@ -62,10 +62,49 @@ async function handleMining(eventData: MinerClientParams) {
         notify,
     );
     const miner = new Miner(privateKey, rpcUrl, address, minReward, notify);
-    const zkProver = new ZKProver(
-        'pantherBusTreeUpdater.wasm',
-        'pantherBusTreeUpdater_final.zkey',
-    );
+    const circuitWasmPath = 'circuits.wasm';
+    const provingKeyPath = 'provingKey.zkey';
+
+    const checkFileExists = async (path: string) => {
+        try {
+            const response = await fetch(path, {method: 'HEAD'});
+            return response.ok;
+        } catch (error) {
+            notify(`Error checking file ${path}: ${error}`);
+            return false;
+        }
+    };
+
+    let zkProver: ZKProver | null = null;
+
+    try {
+        const circuitWasmExists = await checkFileExists(circuitWasmPath);
+        const provingKeyExists = await checkFileExists(provingKeyPath);
+
+        if (!circuitWasmExists || !provingKeyExists) {
+            const missingFiles = [
+                !circuitWasmExists ? circuitWasmPath : null,
+                !provingKeyExists ? provingKeyPath : null,
+            ]
+                .filter(Boolean)
+                .join(', ');
+            notify(
+                `Required files not found: ${missingFiles}. ZKProver will not be initialized.`,
+            );
+        } else {
+            zkProver = new ZKProver(circuitWasmPath, provingKeyPath);
+            notify('ZKProver initialized successfully.');
+        }
+    } catch (error) {
+        notify(`Error initializing ZKProver: ${error}`);
+    }
+    if (zkProver === null) {
+        notify(
+            'Error: ZKProver is not initialized. Mining cannot proceed without ZKProver.',
+        );
+        return;
+    }
+
     const batchProcessing = new BatchProcessing(tree, scanner, db, notify);
     const queueProcessing = new QueueProcessing(miner, db, notify);
     const miningStats = new MiningStats();
@@ -78,7 +117,6 @@ async function handleMining(eventData: MinerClientParams) {
             batchProcessing,
             queueProcessing,
             miningStats,
-            false,
             notify,
         );
         miningStats.printMetrics();
