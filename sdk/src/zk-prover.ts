@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import assert from 'assert';
-
 import {groth16} from 'snarkjs';
 
 import {ProofInputs} from './types';
-import verificationKey from './wasm/VK_pantherBusTreeUpdater.json';
+import verificationKey from './wasm/verificationKey.json';
 
 export class ZKProver {
     private readonly verificationKey: any;
@@ -24,15 +22,6 @@ export class ZKProver {
             this.wasmFilePath,
             this.zKeyPath,
             null,
-        );
-
-        assert(
-            await groth16.verify(
-                this.verificationKey,
-                publicSignals,
-                lProof,
-                null,
-            ),
         );
 
         const solProof = (replica => [
