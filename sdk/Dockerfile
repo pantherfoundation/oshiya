@@ -11,4 +11,4 @@ RUN chmod +x gen-types.sh
 RUN ls -la gen-types.sh
 RUN apk add --no-cache bash
 RUN ./gen-types.sh
-CMD ["yarn", "start"]
+ENTRYPOINT ["yarn"]

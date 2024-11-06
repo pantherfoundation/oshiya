@@ -57,16 +57,19 @@ yarn start
 ```
 
 ## Docker Installation
+
 To run the Panther Miner in a Docker container, perform the following steps:
 
 1. Build the Docker image:
+
 ```bash
 docker build -t miner-app .
 ```
 
 2. Then run the image:
+
 ```bash
-docker run miner-app
+docker run miner-app start
 ```
 
 Or use docker-compose:
@@ -75,9 +78,102 @@ Or use docker-compose:
 docker-compose up --build
 ```
 
+## Claiming rewards
 
+There are two methods to claim rewards, each suited for different scenarios:
 
-Configuration
+**Method 1: Claiming Without Signature (For Miner Private Key Holders)**
+
+This method is used when you have direct access to the miner's private key:
+
+```bash
+yarn claimReward \
+  -r <receiverAddress> \
+  -a <PantherTreesContractAddress> \
+  --pk <privateKey> \
+  --rpc <rpcEndpoint>
+```
+
+**Method 2: Claiming With Signature (For Delegated Claims)**
+
+This method enables a two-step process where:
+
+1. The miner private key holder generates a signature
+2. Anyone can then claim the rewards using this signature (no private key needed)
+3. **Generate Signature File** (Done by miner private key holder)
+
+```bash
+yarn generate:signature \
+  -o <outputDirectoryToStoreSignature> \
+  --rpc <rpcEndpoint> \
+  --pk <privateKey> \
+  -a <PantherTreesContractAddress> \
+  -r <receiverAddress>
+```
+This will create a JSON file containing: {"signature": "<yourSignature>"}
+
+4. **Claim Using Generated Signature** (Can be done by anyone)
+
+```bash
+yarn claimRewardWithSignature \
+  -s <pathToSignatureContainingJsonFile> \
+  --rpc <rpcEndpoint> \
+  --pk <anyPrivateKey> \
+  -a <PantherTreesContractAddress> \
+  -r <receiverAddress>
+```
+Note: This step doesn't require the miner's private key
+
+## Using Docker for Claims
+
+If you're using Docker (ensure you've built the image with docker build -t miner-app .), you have the following options:
+
+1. **Claim Without Signature**
+
+```bash
+docker run miner-app claimReward \
+  -r <receiverAddress> \
+  -a <PantherTreesContractAddress> \
+  --pk <privateKey> \
+  --rpc <rpcEndpoint>
+```
+
+2. **Claim With Signature**
+
+a. Generate signature file:
+
+```bash
+docker run -v $(pwd)/sdk:/app miner-app generate:signature \
+  -o /app \
+  --pk <privateKey> \
+  --rpc <rpcEndpoint> \
+  -a <PantherTreesContractAddress> \
+  -r <receiverAddress>
+```
+
+b. Claim using generated signature (ensure signature.json is in sdk folder):
+
+```bash
+docker run -v $(pwd)/sdk:/app miner-app claimRewardWithSignature \
+  -s signature.json \
+  --rpc <rpcEndpoint> \
+  --pk <anyPrivateKey> \
+  -r <receiverAddress> \
+  -a <PantherTreesContractAddress>
+```
+Note: This step doesn't require the miner's private key
+
+**Parameter Description**
+
+- `<receiverAddress>`: The address that will receive the claimed rewards
+- `<PantherTreesContractAddress>`: The address of the Panther Trees contract
+- `<privateKey>`: The miner's private key (only needed for Method 1 and signature generation)
+- `<anyPrivateKey>`: The private key of any account with Matic
+- `<rpcEndpoint>`: URL of the RPC node
+- `<outputDirectoryToStoreSignature>`: Directory where the signature file will be saved
+- `<pathToSignatureContainingJsonFile>`: Path to the generated signature JSON file
+
+## Configuration
 
 The Panther Miner script needs certain configurations to be set in the `.env` file:
 

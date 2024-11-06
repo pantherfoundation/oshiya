@@ -11,6 +11,9 @@
     "lint:fix": "eslint --fix '**/*.ts'",
     "test": "jest",
     "start": "ts-node scripts/run.ts",
+    "generate:signature": "ts-node scripts/reward/generateSignature.ts",
+    "claimRewardWithSignature": "ts-node scripts/reward/claimRewardWithSignature.ts",
+    "claimReward": "ts-node scripts/reward/claimReward.ts",
     "build": "tsc",
     "gen:queues": "ts-node tests/generate-queues.ts"
   },

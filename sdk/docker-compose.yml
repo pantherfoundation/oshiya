@@ -1,6 +1,7 @@
 version: '3'
 services:
-  my-app:
+  miner-app:
     build:
       context: .
       dockerfile: Dockerfile
+    command: start
