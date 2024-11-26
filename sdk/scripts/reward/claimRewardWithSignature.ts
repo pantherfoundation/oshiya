@@ -6,6 +6,7 @@ import {
     initializeContract,
     executeTransaction,
     validateInput,
+    addExtraGasPercentage,
 } from './utils';
 
 const argv = yargs(process.argv)
@@ -56,15 +57,25 @@ async function main() {
 
         const {v, r, s} = ethers.utils.splitSignature(signature);
 
+        const functionArgs = [argv.receiver, v, r, s];
+
         const txData =
             await contract.populateTransaction.claimMiningRewardWithSignature(
-                argv.receiver,
-                v,
-                r,
-                s,
+                ...functionArgs,
             );
 
-        await executeTransaction(contract.signer as ethers.Wallet, txData);
+        const gasLimit = addExtraGasPercentage(
+            (
+                await contract.estimateGas.claimMiningRewardWithSignature(
+                    ...functionArgs,
+                )
+            ).toBigInt(),
+        );
+        await executeTransaction(
+            contract.signer as ethers.Wallet,
+            txData,
+            gasLimit,
+        );
     } catch (error) {
         console.error('Error claiming mining reward with signature:', error);
     }

@@ -5,6 +5,7 @@ import {
     ClaimRewardArgs,
     executeTransaction,
     validateInput,
+    addExtraGasPercentage,
 } from './utils';
 
 const argv = yargs(process.argv)
@@ -45,7 +46,8 @@ async function main() {
         const txData = await contract.populateTransaction.claimMiningReward(
             argv.receiver,
         );
-        await executeTransaction(contract.signer as ethers.Wallet, txData);
+        const gasLimit = addExtraGasPercentage((await contract.estimateGas.claimMiningReward(argv.receiver)).toBigInt());
+        await executeTransaction(contract.signer as ethers.Wallet, txData, gasLimit);
     } catch (error) {
         console.error('Error claiming mining reward:', error);
     }

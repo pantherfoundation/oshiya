@@ -1,5 +1,6 @@
 import {ethers} from 'ethers';
 
+const TX_EXTRA_GAS_PERCENTAGE = 10;
 const EIP712_NAME = 'Panther Protocol';
 const EIP712_VERSION = '1';
 const EIP712_SALT =
@@ -34,15 +35,25 @@ export const initializeContract = (
 export async function executeTransaction(
     wallet: ethers.Wallet,
     txData: ethers.PopulatedTransaction,
+    gasLimit: bigint,
 ): Promise<void> {
+    const gasPrice = await wallet.getGasPrice();
     const txResponse = await wallet.sendTransaction({
         ...txData,
-        gasPrice: 30000000000,
-        gasLimit: 1000000,
+        gasLimit,
+        gasPrice,
     });
     console.log('Transaction Hash:', txResponse.hash);
     await txResponse.wait();
     console.log('Transaction confirmed.');
+}
+
+export function addExtraGasPercentage(
+    estimatedGasFees: bigint,
+    extraGasPercentage: number = TX_EXTRA_GAS_PERCENTAGE,
+): bigint {
+    const marginGas = (estimatedGasFees * BigInt(extraGasPercentage)) / 100n;
+    return estimatedGasFees + marginGas;
 }
 
 class InvalidInputError extends Error {
