@@ -35,11 +35,7 @@ export async function executeTransaction(
     wallet: ethers.Wallet,
     txData: ethers.PopulatedTransaction,
 ): Promise<void> {
-    const txResponse = await wallet.sendTransaction({
-        ...txData,
-        gasPrice: 30000000000,
-        gasLimit: 1000000,
-    });
+    const txResponse = await wallet.sendTransaction(txData);
     console.log('Transaction Hash:', txResponse.hash);
     await txResponse.wait();
     console.log('Transaction confirmed.');
