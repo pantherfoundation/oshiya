@@ -5,8 +5,8 @@ const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const WebpackPwaManifest = require('webpack-pwa-manifest');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const targetEnv = process.env.TARGET_ENV;
 const isProd = targetEnv === 'production';
@@ -74,9 +74,11 @@ module.exports = {
         },
     },
     output: {
-        // filename: 'build-[contenthash].js',
+        clean: true,
         filename: '[name].js',
         path: path.join(__dirname, './build'),
+        globalObject: 'self',
+        assetModuleFilename: 'assets/[name][ext]',
     },
     target: 'web',
     module: {
@@ -115,21 +117,27 @@ module.exports = {
                 use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
             {
-                test: /\.(png|jpg|jpeg|gif|ico)$/,
+                test: /\.(png|jpg|jpeg|gif|ico|webp)$/,
                 exclude: /node_modules/,
-                use: ['file-loader?name=[name].[ext]'], // ?name=[name].[ext] is only necessary to preserve the original file name
+                type: 'asset/resource',
             },
             {
-                test: /\.svg$/,
-                use: [
-                    {
-                        loader: 'svg-url-loader',
-                        options: {
-                            esModule: false,
-                            limit: 10000,
-                        },
-                    },
-                ],
+                test: /\.svg$/i,
+                type: 'asset',
+                resourceQuery: {not: [/component/]},
+            },
+            {
+                test: /\.svg$/i,
+                issuer: /\.[jt]sx?$/,
+                resourceQuery: /component/,
+                use: ['@svgr/webpack'],
+            },
+            {
+                test: /\.(wasm|zkey)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: '[name][ext]' // Keep original filename without hash
+                }
             },
         ],
     },
@@ -144,10 +152,10 @@ module.exports = {
     plugins: [
         new NodePolyfillPlugin(),
         new HtmlWebpackPlugin({
-            // HtmlWebpackPlugin simplifies creation of HTML files to serve your webpack bundles
             template: './public/index.html',
             filename: './index.html',
             favicon: './public/logo.png',
+            chunks: ['main'],
         }),
         // DefinePlugin allows you to create global constants which can be configured at compile time
         new webpack.ProvidePlugin({
@@ -160,29 +168,20 @@ module.exports = {
         new Dotenv(),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.optimize.AggressiveMergingPlugin(),
-        new WebpackPwaManifest({
-            short_name: 'Panther Miner',
-            name: 'Panther Miner Client',
-            icons: [
-                {
-                    src: path.resolve('./public/logo.png'),
-                    sizes: [64, 32, 24, 16],
-                },
-                {
-                    src: path.resolve('./public/logo.png'),
-                    size: '192x192',
-                },
-                {
-                    src: path.resolve('./public/logo.png'),
-                    size: '512x512',
-                },
-            ],
-            publicPath: '/',
-            theme_color: '#000000',
-            background_color: '#ffffff',
-        }),
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: 'public/circuits.wasm',
+                    to: '[name][ext]'
+                },
+                {
+                    from: 'public/provingKey.zkey',
+                    to: '[name][ext]'
+                }
+            ]
         }),
     ],
     optimization: isProdOrStaging
