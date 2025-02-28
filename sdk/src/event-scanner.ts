@@ -60,19 +60,25 @@ export class EventScanner {
         }
     }
 
-
-
     private async scanBlockRangeAndSave(
         fromBlock: number,
         toBlock: number,
     ): Promise<void> {
-        try {
-            for (const filter of this.filters) {
-                const logs = await this.contract.queryFilter(
+        // Keep track of events found per filter
+        const eventCounts: Record<string, number> = {};
+
+        for (const filter of this.filters) {
+            let logs;
+            try {
+                logs = await this.contract.queryFilter(
                     filter,
                     fromBlock,
                     toBlock,
                 );
+
+                // Keep track of how many events we found for this filter
+                const filterKey = String(filter.topics?.[0]) || 'unknown';
+                eventCounts[filterKey] = logs.length;
 
                 for (const log of logs) {
                     const parsed = this.contract.interface.parseLog(log);
@@ -85,10 +91,16 @@ export class EventScanner {
                         this.db.storeEventUtxoBusQueued(eventRecord);
                     }
                 }
+            } catch (error: any) {
+                this.log(`Error querying filter: ${error.message}`);
+                // Re-throw the error to trigger retry mechanism
+                throw error;
             }
-        } catch (error: any) {
-            this.log(`Error scanning block range: ${error.message}`);
         }
+
+        // Log summary of events found
+        const totalEvents = Object.values(eventCounts).reduce((sum, count) => sum + count, 0);
+        this.log(`Found ${totalEvents} events in block range ${fromBlock}-${toBlock}`);
     }
 
     private mapBusBatchOnboardedEvent(
