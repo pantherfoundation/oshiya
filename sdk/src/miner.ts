@@ -97,42 +97,79 @@ export class Miner {
         let receipt = null;
         let attempts = 0;
         const maxAttempts = 5;
+        let gasMultiplier = 1.1;
+
+        // Get the current nonce once, and reuse it for all attempts
+        const nonce = await this.forestContract.signer.getTransactionCount();
+        this.log(`Using nonce: ${nonce} for all retry attempts`);
 
         while (receipt === null && attempts < maxAttempts) {
             attempts++;
             const feeData = await this.getFeeData();
 
-            const tx = await this.forestContract.onboardBusQueue(
-                minerAddress,
-                queueId,
-                publicSignals,
-                proof,
-                {
-                    maxFeePerGas: feeData.maxFeePerGas,
-                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-                },
-            );
-            this.log(`Submitted tx ${tx.hash} (attempt ${attempts})`);
+            // Apply gas price multiplier for retries
+            const maxFeePerGas = feeData.maxFeePerGas
+                .mul(Math.floor(gasMultiplier * 100))
+                .div(100);
+            const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
+                .mul(Math.floor(gasMultiplier * 100))
+                .div(100);
+
+            // Log submission values
+            this.log(`Submitting onboardBusQueue with:
+                minerAddress: ${minerAddress}
+                queueId: ${queueId}
+                maxFeePerGas: ${utils.formatUnits(maxFeePerGas, 'gwei')} gwei
+                maxPriorityFeePerGas: ${utils.formatUnits(maxPriorityFeePerGas, 'gwei')} gwei
+                nonce: ${nonce}
+            `);
 
             try {
+                const tx = await this.forestContract.onboardBusQueue(
+                    minerAddress,
+                    queueId,
+                    publicSignals,
+                    proof,
+                    {
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        nonce,
+                    },
+                );
+                this.log(`Submitted tx ${tx.hash} (attempt ${attempts})`);
+
                 // Set up race between transaction confirmation and timeout
                 receipt = await Promise.race([
                     tx.wait(),
                     new Promise<null>((_, reject) => {
                         setTimeout(() => {
-                            reject(new Error('Transaction confirmation timeout after 1 minute'));
-                        }, 60000); // 1 minute in milliseconds
-                    })
+                            reject(
+                                new Error(
+                                    'Transaction confirmation timeout after 1 minute',
+                                ),
+                            );
+                        }, 60_000); // 1 minute in milliseconds
+                    }),
                 ]);
 
                 this.log(`Transaction confirmed in attempt ${attempts}`);
             } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error);
                 this.log(`Attempt ${attempts} failed: ${errorMessage}`);
+
+                gasMultiplier += 0.2;
+                this.log(
+                    `Increasing gas price multiplier to ${gasMultiplier} for next attempt`,
+                );
+
                 if (attempts >= maxAttempts) {
-                    throw new Error(`Transaction failed after ${maxAttempts} attempts`);
+                    throw new Error(
+                        `Transaction failed after ${maxAttempts} attempts`,
+                    );
                 }
-                this.log('Resubmitting transaction...');
+
+                this.log('Resubmitting transaction with same nonce...');
             }
         }
 
