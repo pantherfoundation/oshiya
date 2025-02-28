@@ -1,17 +1,12 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import {ContractReceipt, Wallet, utils} from 'ethers';
+import {type ContractReceipt, Wallet, utils, BigNumber} from 'ethers';
 
 import {BusQueues, ForestTree} from './contract/forest-types';
 import {initializeBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
-
-// We need to hardcode these values because the latest supported version of
-// ethers 5.7.2 doesn't correctly estimate them.
-const MAX_PRIORITY_FEE_PER_GAS = 30_000_000_000; // 30 gwei
-const MAX_FEE_PER_GAS = 30 + MAX_PRIORITY_FEE_PER_GAS;
 
 function selectHighestN<T>(
     array: Array<T>,
@@ -99,19 +94,48 @@ export class Miner {
         publicSignals: any,
         proof: any,
     ): Promise<ContractReceipt> {
+        const feeData = await this.getFeeData();
+
         const tx = await this.forestContract.onboardBusQueue(
             minerAddress,
             queueId,
             publicSignals,
             proof,
             {
-                gasLimit: 1_000_000,
-                maxFeePerGas: MAX_FEE_PER_GAS,
-                maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+                maxFeePerGas: feeData.maxFeePerGas,
+                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
             },
         );
         this.log(`Submitted tx ${tx.hash}`);
         return await tx.wait();
+    }
+
+    private async getFeeData() {
+        const provider = this.forestContract.provider;
+        const feeData = await provider.getFeeData();
+
+        // Use reasonable defaults as the provider doesn't return values
+        const maxPriorityFeePerGas = BigNumber.from(30_000_000_000); // 30 gwei default
+
+        // maxFeePerGas should be baseFeePerGas + maxPriorityFeePerGas
+        const baseFeePerGas = feeData.lastBaseFeePerGas || BigNumber.from(0);
+        const maxFeePerGas =
+            feeData.maxFeePerGas || baseFeePerGas.add(maxPriorityFeePerGas);
+
+        this.log(
+            `Current gas prices: maxFeePerGas=${utils.formatUnits(
+                maxFeePerGas,
+                'gwei',
+            )} gwei, maxPriorityFeePerGas=${utils.formatUnits(
+                maxPriorityFeePerGas,
+                'gwei',
+            )} gwei`,
+        );
+
+        return {
+            maxFeePerGas,
+            maxPriorityFeePerGas,
+        };
     }
 
     public async getBusTreeRoot(): Promise<string> {
