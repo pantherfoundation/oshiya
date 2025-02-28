@@ -93,21 +93,50 @@ export class Miner {
         queueId: bigint,
         publicSignals: any,
         proof: any,
-    ): Promise<ContractReceipt> {
-        const feeData = await this.getFeeData();
+    ): Promise<ContractReceipt | null> {
+        let receipt = null;
+        let attempts = 0;
+        const maxAttempts = 5;
 
-        const tx = await this.forestContract.onboardBusQueue(
-            minerAddress,
-            queueId,
-            publicSignals,
-            proof,
-            {
-                maxFeePerGas: feeData.maxFeePerGas,
-                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
-            },
-        );
-        this.log(`Submitted tx ${tx.hash}`);
-        return await tx.wait();
+        while (receipt === null && attempts < maxAttempts) {
+            attempts++;
+            const feeData = await this.getFeeData();
+
+            const tx = await this.forestContract.onboardBusQueue(
+                minerAddress,
+                queueId,
+                publicSignals,
+                proof,
+                {
+                    maxFeePerGas: feeData.maxFeePerGas,
+                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                },
+            );
+            this.log(`Submitted tx ${tx.hash} (attempt ${attempts})`);
+
+            try {
+                // Set up race between transaction confirmation and timeout
+                receipt = await Promise.race([
+                    tx.wait(),
+                    new Promise<null>((_, reject) => {
+                        setTimeout(() => {
+                            reject(new Error('Transaction confirmation timeout after 1 minute'));
+                        }, 60000); // 1 minute in milliseconds
+                    })
+                ]);
+
+                this.log(`Transaction confirmed in attempt ${attempts}`);
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                this.log(`Attempt ${attempts} failed: ${errorMessage}`);
+                if (attempts >= maxAttempts) {
+                    throw new Error(`Transaction failed after ${maxAttempts} attempts`);
+                }
+                this.log('Resubmitting transaction...');
+            }
+        }
+
+        return receipt;
     }
 
     private async getFeeData() {
