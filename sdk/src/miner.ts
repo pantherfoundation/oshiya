@@ -108,12 +108,13 @@ export class Miner {
             const feeData = await this.getFeeData();
 
             // Apply gas price multiplier for retries
-            const maxFeePerGas = feeData.maxFeePerGas
-                .mul(Math.floor(gasMultiplier * 100))
-                .div(100);
             const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
                 .mul(Math.floor(gasMultiplier * 100))
                 .div(100);
+
+            // Ensure maxFeePerGas is at least baseFeePerGas + maxPriorityFeePerGas
+            const baseFeePerGas = await this.forestContract.provider.getGasPrice();
+            const maxFeePerGas = baseFeePerGas.add(maxPriorityFeePerGas);
 
             // Log submission values
             this.log(`Submitting onboardBusQueue with:
