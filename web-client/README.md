@@ -1,45 +1,123 @@
 # Miner Web Client
 
-## Deployment
+A web client for the miner application that interacts with blockchain contracts.
 
-1. Create `.env` file in `web-client/` and environment variables. All environment
-   variables are optional. Take a look at `.env.example` for for reference.
+## Prerequisites
 
-    - `CONTRACT_ADDRESS`: Bus tree contract address
-    - `INTERVAL`: Mining work interval.
-    - `RPC_URL`: Chain RPC RUL
-    - `SUBGRAPH_ID`: The subgraph ID
+- Node.js (use the version specified in `.nvmrc`)
+- Yarn package manager
+- Basic knowledge of blockchain concepts and IPFS
 
-2. Install dependencies
+## Setup
 
-    ```bash
-    nvm use && yarn
-    ```
+1. **Create Environment Configuration**
 
-3. Build miner SDK and Generate types
+   Create a `.env` file in the `web-client/` directory. All environment variables are optional.
+   See `.env.example` for reference:
 
-    ```bash
-    cd sdk/ && ./gen-types.sh
+   - `CONTRACT_ADDRESS`: Bus tree contract address
+   - `INTERVAL`: Mining interval
+   - `RPC_URL`: Chain RPC URL
+   - `SUBGRAPH_ID`: The subgraph ID
 
-    cd sdk/ && yarn build
-    ```
+2. **Install Dependencies**
 
-4. Build the web client
+   ```bash
+   nvm use && yarn
+   ```
 
-    ```bash
-    cd web-client/ && yarn build:prod
-    ```
+## Build Process
 
-5. Bundle the wasm/zkeys files
+1. **Build Miner SDK and Generate Types**
 
-    ```bash
-    cd web-client/ && yarn bundle:wasm
-    ```
+   ```bash
+   cd sdk/ && ./gen-types.sh && yarn build
+   ```
 
-6. Read [ipfs deployment guide](./scripts/deploy-ipfs.md) to know how to deploy
-   the output build to ipfs.
+2. **Build the Web Client**
 
-    Best option is to deploy using [infura](https://www.infura.io/product/ipfs).
+   ```bash
+   cd web-client/ && yarn build:prod
+   ```
 
-    Add `INFURA_PROJECT_ID` and `INFURA_PROJECT_SECRET_ID` to `web-client/.env`
-    Then run the script `yarn deploy:ipfs:infura`
+3. **Bundle the WASM/ZKeys Files**
+
+   ```bash
+   yarn bundle:wasm
+   ```
+
+## Deployment to IPFS
+
+You can deploy the build folder to IPFS using any of the following methods:
+
+### Option 1: Using IPFS CLI
+
+1. Install IPFS CLI if not already installed:
+   ```bash
+   # Installation instructions: https://docs.ipfs.tech/install/command-line/
+   ipfs --version
+   ```
+
+2. Initialize IPFS (if first time):
+   ```bash
+   ipfs init
+   ```
+
+3. Start the IPFS daemon:
+   ```bash
+   ipfs daemon
+   ```
+
+4. Add your build folder to IPFS:
+   ```bash
+   ipfs add -r web-client/build
+   ```
+
+5. Use the CID from the last line of the output to access your deployment:
+   ```
+   https://ipfs.io/ipfs/<YOUR_CID>
+   ```
+
+### Option 2: Using Pinata or Similar IPFS Pinning Service
+
+1. Create an account on [Pinata](https://www.pinata.cloud/) or another IPFS pinning service
+2. Upload your build folder through their web interface
+3. Access your deployment via the provided CID:
+   ```
+   https://ipfs.io/ipfs/<YOUR_CID>
+   ```
+
+### Option 3: Using web3.storage
+
+1. Sign up at [web3.storage](https://web3.storage/)
+2. Install their CLI tool:
+   ```bash
+   yarn global add @web3-storage/w3cli
+   ```3. Configure and authenticate:
+   ```bash
+   w3 login
+   ```
+4. Upload your build folder:
+   ```bash
+   w3 put web-client/build
+   ```
+5. Access your deployment via the provided CID:
+   ```
+   https://ipfs.io/ipfs/<YOUR_CID>
+   ```
+
+## Making Your IPFS Deployment Persistent
+
+For production deployments, consider:
+- Pinning your content with services like Pinata, Infura, or web3.storage
+- Running your own IPFS node and pinning the content
+- Using a service like Fleek for automatic deployment from git to IPFS
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file in the root directory of this project for details.
+
+Copyright 2024 Panther Protocol Foundation
+
+
+
