@@ -56,36 +56,62 @@ export class Miner {
         this.log = log;
     }
 
-    public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput> {
+    public async getHighestRewardQueue(): Promise<BusQueueRecStructOutput | null> {
         const queues = await this.getPendingQueues();
-        const queuesWithMoreThanMinReward = queues.filter(
-            q =>
-                q.reward.gt(utils.parseEther(this.minReward)) &&
-                q.remainingBlocks == 0,
-        );
+        this.log(`Filtering ${queues.length} queues based on minimum reward ${this.minReward} ZKP`);
+
+        const queuesWithMoreThanMinReward = queues.filter(q => {
+            const meetsReward = q.reward.gt(utils.parseEther(this.minReward));
+            const hasNoRemainingBlocks = q.remainingBlocks == 0;
+
+            this.log(`Queue ${q.queueId}: reward=${utils.formatEther(q.reward)} ZKP, remainingBlocks=${q.remainingBlocks}, meetsReward=${meetsReward}, hasNoRemainingBlocks=${hasNoRemainingBlocks}`);
+
+            return meetsReward && hasNoRemainingBlocks;
+        });
+
+        this.log(`Found ${queuesWithMoreThanMinReward.length} queues meeting reward criteria`);
+
+        if (queuesWithMoreThanMinReward.length === 0) {
+            return null;
+        }
+
         const topFive = selectHighestN(
             queuesWithMoreThanMinReward,
             'reward',
             'firstUtxoBlock',
             5,
         );
-        return getRandomElement(topFive);
+
+        this.log('Top 5 queues by reward:');
+        topFive.forEach(q => {
+            this.log(`Queue ${q.queueId}: reward=${utils.formatEther(q.reward)} ZKP, firstUtxoBlock=${q.firstUtxoBlock}`);
+        });
+
+        const selected = getRandomElement(topFive);
+        this.log(`Randomly selected queue ${selected.queueId} with reward ${utils.formatEther(selected.reward)} ZKP`);
+
+        return selected;
     }
 
-    public async getPendingQueues(): Promise<
-        BusQueues.BusQueueRecStructOutput[]
-    > {
+    public async getPendingQueues(): Promise<BusQueues.BusQueueRecStructOutput[]> {
         const queues = await this.forestContract.getOldestPendingQueues(255);
-        this.log(`Found ${queues.length} queue(s)`);
+        this.log(`Found ${queues.length} pending queue(s)`);
+
+        queues.forEach(q => {
+            this.log(`Queue ${q.queueId}: nUtxos=${q.nUtxos}, reward=${utils.formatEther(q.reward)} ZKP, remainingBlocks=${q.remainingBlocks}, firstUtxoBlock=${q.firstUtxoBlock}`);
+        });
+
         return queues;
     }
 
     public async hasPendingQueues(): Promise<boolean> {
         const pendingQueues = await this.getPendingQueues();
-        // Check if there are any pending queues with at least one UTXO
-        return pendingQueues.some(
+        const hasQueuesWithUtxos = pendingQueues.some(
             (queue: BusQueues.BusQueueRecStructOutput) => queue.nUtxos > 0,
         );
+
+        this.log(`Has queues with UTXOs: ${hasQueuesWithUtxos}`);
+        return hasQueuesWithUtxos;
     }
 
     public async mineQueue(
