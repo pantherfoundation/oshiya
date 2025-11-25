@@ -26,6 +26,7 @@ const MinerClientParamsForm = () => {
         rpcUrl: string;
         address: string;
         subgraphId: string;
+        subgraphAuthToken: string;
         genesisBlockNumber: string;
         minReward: string;
     }>({
@@ -34,6 +35,7 @@ const MinerClientParamsForm = () => {
         rpcUrl: env.RPC_URL || '',
         address: env.CONTRACT_ADDRESS || '',
         subgraphId: env.SUBGRAPH_ID || '',
+        subgraphAuthToken: env.SUBGRAPH_AUTH_TOKEN || '',
         genesisBlockNumber: env.GENESIS_BLOCK_NUMBER || '',
         minReward: env.MIN_REWARD || '0.001',
     });
@@ -87,6 +89,10 @@ const MinerClientParamsForm = () => {
                 condition: !state.subgraphId,
                 message: 'Subgraph ID field is required',
             },
+            {
+                condition: !state.subgraphAuthToken,
+                message: 'Subgraph Auth Token field is required',
+            },
         ];
 
         for (const validation of validations) {
@@ -125,6 +131,17 @@ const MinerClientParamsForm = () => {
                             value={state.subgraphId}
                             name="subgraphId"
                             onChange={updateStateHandler}
+                        />
+                    </div>
+                </div>
+                <div className="flex items-end justify-between space-x-5 mb-4">
+                    <div className="w-full">
+                        <Input
+                            label="Subgraph Auth Token"
+                            value={state.subgraphAuthToken}
+                            name="subgraphAuthToken"
+                            onChange={updateStateHandler}
+                            type="password"
                         />
                     </div>
                 </div>
@@ -209,6 +226,7 @@ const MinerClientParamsForm = () => {
                             rpcUrl: state.rpcUrl,
                             address: state.address,
                             subgraphId: state.subgraphId,
+                            subgraphAuthToken: state.subgraphAuthToken,
                             genesisBlockNumber,
                             minReward: state.minReward,
                         };

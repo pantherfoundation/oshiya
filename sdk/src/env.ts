@@ -5,12 +5,14 @@ import {providers, utils, Wallet} from 'ethers';
 
 import {EnvVariables} from './types';
 
-export const requiredVars: Array<keyof EnvVariables> = [
+type RequiredEnvVars = Exclude<keyof EnvVariables, 'PAGE_SIZE'>;
+export const requiredVars: Array<RequiredEnvVars> = [
     'INTERVAL',
     'PRIVATE_KEY',
     'RPC_URL',
     'CONTRACT_ADDRESS',
     'SUBGRAPH_ID',
+    'SUBGRAPH_AUTH_TOKEN',
     'GENESIS_BLOCK_NUMBER',
     'MIN_REWARD',
 ];
@@ -38,6 +40,9 @@ export function parseEnvVariables(env: NodeJS.ProcessEnv): EnvVariables {
             parsed[varName] = env[varName]!;
         }
     }
+
+    // Optional PAGE_SIZE with default of 1000
+    parsed.PAGE_SIZE = env.PAGE_SIZE ? parseInt(env.PAGE_SIZE) : 1000;
 
     return parsed as EnvVariables;
 }
