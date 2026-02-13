@@ -7,6 +7,7 @@ const initialState: MinerClientParams = {
     rpcUrl: '',
     address: '',
     subgraphId: '',
+    subgraphAuthToken: '',
     genesisBlockNumber: 0,
     minReward: '0.001',
 };

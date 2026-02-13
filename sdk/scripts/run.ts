@@ -35,6 +35,8 @@ async function main() {
     const [tree, startingBlock, insertedQueueIds] = await coldStart(
         env.SUBGRAPH_ID,
         env.GENESIS_BLOCK_NUMBER,
+        log,
+        env.SUBGRAPH_AUTH_TOKEN,
     );
 
     const db = new MemCache(insertedQueueIds);
@@ -43,6 +45,8 @@ async function main() {
         env.CONTRACT_ADDRESS,
         startingBlock,
         db,
+        log,
+        env.PAGE_SIZE,
     );
 
     const batchProcessing = new BatchProcessing(tree, scanner, db);

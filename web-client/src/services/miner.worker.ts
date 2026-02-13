@@ -41,6 +41,7 @@ async function handleMining(eventData: MinerClientParams) {
         interval,
         address,
         subgraphId,
+        subgraphAuthToken,
         genesisBlockNumber,
         minReward,
     } = eventData;
@@ -50,6 +51,7 @@ async function handleMining(eventData: MinerClientParams) {
         subgraphId,
         Number(env.GENESIS_BLOCK_NUMBER),
         notify,
+        subgraphAuthToken,
     );
     const db = new MemCache(insertedQueueIds, notify);
     const scanner = new EventScanner(

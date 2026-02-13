@@ -8,8 +8,20 @@ import {BusBatchOnboardedEvent, BranchFilledEvent} from './types';
 const PAGINATION_WINDOW_SIZE = 1000;
 
 // Handles all Subgraph API requests
-async function requestSubgraph(url: string, query: string): Promise<any> {
-    const response = await axios.post(url, {query});
+async function requestSubgraph(
+    url: string,
+    query: string,
+    authToken?: string,
+): Promise<any> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
+    const response = await axios.post(url, {query}, {headers});
 
     if (response.data.errors?.[0]?.message || response.status !== 200) {
         console.error(response.data.errors?.[0]?.message);
@@ -40,13 +52,19 @@ class QueryBuilder {
 
 export class Subgraph {
     private readonly url: string;
+    private readonly authToken?: string;
 
-    constructor(id: string) {
-        this.url = `https://api.thegraph.com/subgraphs/id/${id}`;
+    constructor(id: string, authToken?: string) {
+        this.url = `https://gateway.thegraph.com/api/subgraphs/id/${id}`;
+        this.authToken = authToken;
     }
 
     private async fetchFromSubgraph(queryBuilder: QueryBuilder): Promise<any> {
-        return await requestSubgraph(this.url, queryBuilder.build());
+        return await requestSubgraph(
+            this.url,
+            queryBuilder.build(),
+            this.authToken,
+        );
     }
 
     public async getFilledBranches(): Promise<BranchFilledEvent[]> {

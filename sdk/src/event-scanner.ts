@@ -10,7 +10,7 @@ import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const PAGE_SIZE = 1_000; // Amount of blocks to scan at once
+const DEFAULT_PAGE_SIZE = 1000;
 
 export class EventScanner {
     private contract: ForestTree;
@@ -18,6 +18,7 @@ export class EventScanner {
     private filters: EventFilter[];
     private startingBlock: number;
     private log: LogFn;
+    private pageSize: number;
 
     constructor(
         rpcEndpoint: string,
@@ -25,6 +26,7 @@ export class EventScanner {
         startingBlock: number,
         db: MemCache,
         log: LogFn = defaultLog,
+        pageSize: number = DEFAULT_PAGE_SIZE,
     ) {
         this.contract = initializeReadOnlyBusContract(rpcEndpoint, address);
         this.filters = [
@@ -34,6 +36,7 @@ export class EventScanner {
         this.db = db;
         this.startingBlock = startingBlock;
         this.log = log;
+        this.pageSize = pageSize;
     }
 
     public async scan(): Promise<void> {
@@ -45,8 +48,8 @@ export class EventScanner {
             const totalBlocks = currentBlock - this.startingBlock;
             let scannedBlocks = 0;
 
-            for (let i = this.startingBlock; i < currentBlock; i += PAGE_SIZE) {
-                const endBlock = Math.min(i + PAGE_SIZE, currentBlock);
+            for (let i = this.startingBlock; i < currentBlock; i += this.pageSize) {
+                const endBlock = Math.min(i + this.pageSize, currentBlock);
                 const progress = Math.floor((scannedBlocks / totalBlocks) * 100);
                 this.log(`Scanning block range ${i} - ${endBlock} [${progress}%]`);
                 await this.scanBlockRangeAndSave(i, endBlock);
