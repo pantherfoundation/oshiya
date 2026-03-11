@@ -1,19 +1,35 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
+import fs from 'node:fs';
+import {join} from 'path';
+
 import {groth16} from 'snarkjs';
 
 import {ProofInputs} from './types';
-import verificationKey from './wasm/verificationKey.json';
 
 export class ZKProver {
-  private readonly verificationKey: any;
+  private readonly verificationKey: string;
+  private readonly wasmFilePath: string;
+  private readonly zKeyPath: string;
 
-  constructor(
-    private readonly wasmFilePath: string,
-    private readonly zKeyPath: string,
-  ) {
-    this.verificationKey = verificationKey;
+  constructor(private readonly protocolVersion: string) {
+    const vkey = join(
+      __dirname,
+      `./wasm/${protocolVersion}/verificationKey.json`,
+    );
+
+    this.wasmFilePath = join(
+      __dirname,
+      `./wasm/${protocolVersion}/circuits.wasm`,
+    );
+
+    this.zKeyPath = join(
+      __dirname,
+      `./wasm/${protocolVersion}/provingKey.zkey`,
+    );
+
+    this.verificationKey = JSON.parse(fs.readFileSync(vkey).toString('utf-8'));
   }
 
   public async generateProof(pInput: ProofInputs): Promise<any> {
