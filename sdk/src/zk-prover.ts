@@ -46,6 +46,15 @@ export class ZKProver {
       replica.pi_c.slice(0, 2),
     ])(JSON.parse(JSON.stringify(lProof)));
 
+    const isValid = await groth16.verify(
+      this.verificationKey,
+      publicSignals,
+      lProof,
+      null,
+    );
+
+    if (!isValid) throw new Error('Proof verification failed');
+    else console.log('Proof verified successfully');
     return [solProof, publicSignals];
   }
 }
