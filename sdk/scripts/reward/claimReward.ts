@@ -50,7 +50,8 @@ async function main() {
 
     try {
         const feeData = await provider.getFeeData();
-        const maxPriorityFeePerGas = BigNumber.from(30_000_000_000); // 30 gwei
+        const maxPriorityFeePerGas =
+            feeData.maxPriorityFeePerGas ?? BigNumber.from(30_000_000_000);
         const baseFeePerGas = feeData.lastBaseFeePerGas;
         if (!baseFeePerGas) {
           throw new Error("Could not retrieve base fee, cannot proceed with fee estimation.");

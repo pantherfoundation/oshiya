@@ -5,6 +5,15 @@ import {providers, utils, Wallet} from 'ethers';
 
 import {EnvVariables} from './types';
 
+const nativeSymbolByChainId: Record<number, string> = {
+  1: 'ETH',
+  137: 'POL',
+  8453: 'ETH',
+  80001: 'POL',
+  80002: 'POL',
+  84532: 'ETH',
+};
+
 export const requiredVars: Array<keyof EnvVariables> = [
   'INTERVAL',
   'PRIVATE_KEY',
@@ -52,8 +61,15 @@ export async function logSettings(env: EnvVariables): Promise<void> {
 
       // Get the balance of the miner address
       const provider = new providers.JsonRpcProvider(env.RPC_URL);
-      const balance = await provider.getBalance(minerAddress);
-      logEnvVariable('MINER_BALANCE', utils.formatEther(balance) + ' POL');
+      const [balance, network] = await Promise.all([
+        provider.getBalance(minerAddress),
+        provider.getNetwork(),
+      ]);
+      const symbol = nativeSymbolByChainId[network.chainId] ?? 'ETH';
+      logEnvVariable(
+        'MINER_BALANCE',
+        `${utils.formatEther(balance)} ${symbol}`,
+      );
     } else {
       logEnvVariable(v, env[v]);
     }
