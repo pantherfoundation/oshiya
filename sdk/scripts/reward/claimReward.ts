@@ -16,20 +16,23 @@ const argv = yargs(process.argv)
     })
     .option('privateKey', {
         alias: 'pk',
-        description: 'Private key of the user triggering the function',
+        description: 'Private key of the user triggering the function (defaults to PRIVATE_KEY env)',
         type: 'string',
+        default: process.env.PRIVATE_KEY,
         demandOption: true,
     })
     .option('rpc', {
         alias: 'rpc',
-        description: 'RPC endpoint to connect to the blockchain',
+        description: 'RPC endpoint to connect to the blockchain (defaults to RPC_URL env)',
         type: 'string',
+        default: process.env.RPC_URL,
         demandOption: true,
     })
     .option('address', {
         alias: 'a',
-        description: 'Address of the ForestRoot contract',
+        description: 'Address of the ForestRoot contract (defaults to CONTRACT_ADDRESS env)',
         type: 'string',
+        default: process.env.CONTRACT_ADDRESS,
         demandOption: true,
     })
     .help()
