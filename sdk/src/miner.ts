@@ -232,8 +232,9 @@ export class Miner {
     const provider = this.forestContract.provider;
     const feeData = await provider.getFeeData();
 
-    // Use reasonable defaults as the provider doesn't return values
-    const maxPriorityFeePerGas = BigNumber.from(30_000_000_000); // 30 gwei default
+    // Prefer provider-suggested priority fee; fall back to 30 gwei if absent.
+    const maxPriorityFeePerGas =
+      feeData.maxPriorityFeePerGas ?? BigNumber.from(30_000_000_000);
 
     // maxFeePerGas should be baseFeePerGas + maxPriorityFeePerGas
     const baseFeePerGas = feeData.lastBaseFeePerGas || BigNumber.from(0);
