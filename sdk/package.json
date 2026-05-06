@@ -17,6 +17,9 @@
     "generate:signature": "ts-node scripts/reward/generateSignature.ts",
     "claimRewardWithSignature": "ts-node scripts/reward/claimRewardWithSignature.ts",
     "claimReward": "ts-node scripts/reward/claimReward.ts",
+    "claimReward:canary": "env-cmd -f .env.canary ts-node scripts/reward/claimReward.ts",
+    "claimReward:polygon": "env-cmd -f .env.polygon ts-node scripts/reward/claimReward.ts",
+    "claimReward:base": "env-cmd -f .env.base ts-node scripts/reward/claimReward.ts",
     "build": "tsc",
     "gen:queues": "ts-node tests/generate-queues.ts"
   },
