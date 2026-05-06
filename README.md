@@ -38,7 +38,7 @@ Both versions of Oshiya require certain configuration settings, which can be def
 ## Running both Canary and Production versions simultaneously
 
 - To run the canary miner, add the canary configuration to a `.env.canary` file and run the npm script `npm run start:canary`. NOTE: remember to set the `PROTOCOL_VERSION` to `canary` in the `.env.canary` file.
-- In another terminal, you can run the production miner by adding the production configuration to a `.env.production` file and run the npm script `npm run start:production`. NOTE: remember to set the `PROTOCOL_VERSION` to `production` in the `.env.production` file.
+- In another terminal, you can run the production miner by adding the production configuration to a `.env.polygon` file and run the npm script `npm run start:polygon`. NOTE: remember to set the `PROTOCOL_VERSION` to `production` in the `.env.polygon` file.
 
 ## Contributing
 

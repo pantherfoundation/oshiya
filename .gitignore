@@ -5,7 +5,7 @@ sdk/src/types
 sdk/.env
 sdk/lib
 sdk/.env.canary
-sdk/.env.production
+sdk/.env.polygon
 
 web-client/node_modules
 web-client/build
