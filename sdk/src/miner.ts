@@ -5,6 +5,7 @@ import {type ContractReceipt, Wallet, utils, BigNumber} from 'ethers';
 
 import {BusQueues, ForestTree} from './contract/forest-types';
 import {initializeBusContract} from './contracts';
+import {resolveMaxPriorityFeePerGas} from './gas';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
@@ -232,9 +233,10 @@ export class Miner {
     const provider = this.forestContract.provider;
     const feeData = await provider.getFeeData();
 
-    // Prefer provider-suggested priority fee; fall back to 30 gwei if absent.
-    const maxPriorityFeePerGas =
-      feeData.maxPriorityFeePerGas ?? BigNumber.from(30_000_000_000);
+    const maxPriorityFeePerGas = await resolveMaxPriorityFeePerGas(
+      provider,
+      feeData,
+    );
 
     // maxFeePerGas should be baseFeePerGas + maxPriorityFeePerGas
     const baseFeePerGas = feeData.lastBaseFeePerGas || BigNumber.from(0);
