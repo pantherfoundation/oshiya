@@ -1,5 +1,8 @@
-import {ethers, BigNumber, utils} from 'ethers';
+import {ethers, utils} from 'ethers';
 import yargs from 'yargs';
+
+import {resolveMaxPriorityFeePerGas} from '../../src/gas';
+
 import {
     initializeContract,
     ClaimRewardArgs,
@@ -50,8 +53,10 @@ async function main() {
 
     try {
         const feeData = await provider.getFeeData();
-        const maxPriorityFeePerGas =
-            feeData.maxPriorityFeePerGas ?? BigNumber.from(30_000_000_000);
+        const maxPriorityFeePerGas = await resolveMaxPriorityFeePerGas(
+            provider,
+            feeData,
+        );
         const baseFeePerGas = feeData.lastBaseFeePerGas;
         if (!baseFeePerGas) {
           throw new Error("Could not retrieve base fee, cannot proceed with fee estimation.");
