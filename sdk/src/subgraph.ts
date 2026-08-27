@@ -1,22 +1,89 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
+import {lookup as resolverLookup, resolve4} from 'dns';
+import {Agent} from 'https';
+
 import axios from 'axios';
 
-import {BusBatchOnboardedEvent, BranchFilledEvent} from './types';
+import {
+    BusBatchOnboardedEvent,
+    BusBatchOnboardedEventRecord,
+    BranchFilledEvent,
+    UtxoBusQueuedEventRecord,
+} from './types';
 
 const PAGINATION_WINDOW_SIZE = 1000;
+const REQUEST_ATTEMPTS = 4;
+const RETRY_BASE_DELAY_MS = 1000;
+// Without this a black-holed address blocks for the OS TCP timeout, around a
+// minute, before the next one is tried -- longer than simply giving up.
+const REQUEST_TIMEOUT_MS = 15_000;
+
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Node resolves a hostname with `dns.lookup`, which asks the OS resolver for a
+ * single address and never tries another one. When a host publishes several A
+ * records and one of them is unroutable from the current network -- routine for
+ * an anycast CDN -- every request hangs until ETIMEDOUT even though the other
+ * address answers fine. `curl` survives this only because it walks the whole
+ * list.
+ *
+ * Rotate through `resolve4` instead, one address per attempt, so a black-holed
+ * edge costs a retry rather than the whole cold start.
+ */
+function agentForAttempt(attempt: number): Agent {
+    return new Agent({
+        lookup(hostname, options, callback) {
+            resolve4(hostname, (error, addresses) => {
+                if (error || addresses.length === 0) {
+                    resolverLookup(hostname, options, callback);
+                    return;
+                }
+                callback(null, addresses[attempt % addresses.length], 4);
+            });
+        },
+    });
+}
+
+// Retried only for transport failures; a GraphQL error is deterministic and
+// would just fail the same way again.
+function isTransportError(error: unknown): boolean {
+    return axios.isAxiosError(error) && error.response === undefined;
+}
 
 // Handles all Subgraph API requests
 async function requestSubgraph(url: string, query: string): Promise<any> {
-    const response = await axios.post(url, {query});
+    let lastError: unknown;
 
-    if (response.data.errors?.[0]?.message || response.status !== 200) {
-        console.error(response.data.errors?.[0]?.message);
-        throw new Error('Cannot fetch data from the subgraph');
+    for (let attempt = 0; attempt < REQUEST_ATTEMPTS; attempt++) {
+        try {
+            const response = await axios.post(
+                url,
+                {query},
+                {
+                    httpsAgent: agentForAttempt(attempt),
+                    timeout: REQUEST_TIMEOUT_MS,
+                },
+            );
+
+            if (response.data.errors?.[0]?.message || response.status !== 200) {
+                console.error(response.data.errors?.[0]?.message);
+                throw new Error('Cannot fetch data from the subgraph');
+            }
+
+            return response.data.data;
+        } catch (error) {
+            if (!isTransportError(error)) throw error;
+            lastError = error;
+            await delay(RETRY_BASE_DELAY_MS * (attempt + 1));
+        }
     }
 
-    return response.data.data;
+    throw lastError;
 }
 
 // Subgraph GraphQL Query Builder
@@ -28,9 +95,12 @@ class QueryBuilder {
     ) {}
 
     build(): string {
+        // `_meta` takes no arguments, and an empty argument list is a syntax
+        // error rather than a no-op.
+        const args = this.options ? `(${this.options})` : '';
         return `
         query{
-            ${this.queryName}(${this.options}) {
+            ${this.queryName}${args} {
                 ${this.fields.join('\n')}
             }
         }
@@ -119,5 +189,100 @@ export class Subgraph {
         );
         const data = await this.fetchFromSubgraph(queryBuilder);
         return Number(data.busQueueOpeneds[0]?.blockNumber || null);
+    }
+
+    /**
+     * How far the projection has indexed. Events at or below this block are
+     * already available here, so the chain scanner only has to cover what comes
+     * after it.
+     */
+    public async getIndexedBlockNumber(): Promise<number> {
+        const queryBuilder = new QueryBuilder(
+            ['block { number }'],
+            '_meta',
+            '',
+        );
+        const data = await this.fetchFromSubgraph(queryBuilder);
+        return Number(data._meta.block.number);
+    }
+
+    /**
+     * Pages by `id` rather than by block, because several events share a block
+     * and a block-keyed cursor would drop the rest of a partially read block.
+     */
+    private async fetchAllSince(
+        queryName: string,
+        fields: string[],
+        fromBlock: number,
+    ): Promise<any[]> {
+        const collected: any[] = [];
+        let cursor = '';
+
+        while (true) {
+            // Omitted on the first page: these ids are Bytes, and there is no
+            // literal that sorts below every value of that type.
+            const after = cursor ? `, id_gt: "${cursor}"` : '';
+            const queryBuilder = new QueryBuilder(
+                ['id', ...fields],
+                queryName,
+                `where: {blockNumber_gte: ${fromBlock}${after}}, ` +
+                    `orderBy: id, orderDirection: asc, first: ${PAGINATION_WINDOW_SIZE}`,
+            );
+            const data = await this.fetchFromSubgraph(queryBuilder);
+            const rows = data[queryName];
+            if (!rows || rows.length === 0) break;
+
+            collected.push(...rows);
+            cursor = rows[rows.length - 1].id;
+            if (rows.length < PAGINATION_WINDOW_SIZE) break;
+        }
+
+        return collected;
+    }
+
+    public async getQueuedUtxosSince(
+        fromBlock: number,
+    ): Promise<UtxoBusQueuedEventRecord[]> {
+        const rows = await this.fetchAllSince(
+            'utxoBusQueueds',
+            ['utxo', 'queueId', 'utxoIndexInBatch'],
+            fromBlock,
+        );
+        return rows.map(row => ({
+            queueId: Number(row.queueId),
+            utxo: row.utxo,
+            utxoIndexInBatch: Number(row.utxoIndexInBatch),
+        }));
+    }
+
+    public async getOnboardedBatchesSince(
+        fromBlock: number,
+    ): Promise<BusBatchOnboardedEventRecord[]> {
+        const rows = await this.fetchAllSince(
+            'busBatchOnboardeds',
+            [
+                'queueId',
+                'batchRoot',
+                'numUtxosInBatch',
+                'leftLeafIndexInBusTree',
+                'busTreeNewRoot',
+                'busBranchNewRoot',
+            ],
+            fromBlock,
+        );
+        return rows.map(row => {
+            const leftLeafIndexInBusTree = Number(row.leftLeafIndexInBusTree);
+            return {
+                queueId: BigInt(row.queueId),
+                batchRoot: BigInt(row.batchRoot),
+                numUtxosInBatch: Number(row.numUtxosInBatch),
+                leftLeafIndexInBusTree,
+                busTreeNewRoot: row.busTreeNewRoot,
+                busBranchNewRoot: row.busBranchNewRoot,
+                batchIndex: leftLeafIndexInBusTree >> 6,
+                branchIndex: leftLeafIndexInBusTree >> 16,
+                isInserted: false,
+            };
+        });
     }
 }

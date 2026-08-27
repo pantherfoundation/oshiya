@@ -8,7 +8,7 @@ import {log} from '../src/logging';
 import {Miner} from '../src/miner';
 import {MiningStats} from '../src/mining-stats';
 import {QueueProcessing} from '../src/queue-processing';
-import {coldStart, doWork} from '../src/runner';
+import {coldStart, doWork, syncFromSubgraph} from '../src/runner';
 import {ZKProver} from '../src/zk-prover';
 import {MemCache} from '../src/mem-cache';
 
@@ -29,10 +29,15 @@ async function main() {
   );
 
   const db = new MemCache(insertedQueueIds);
+  const scanFromBlock = await syncFromSubgraph(
+    env.SUBGRAPH_URL,
+    startingBlock,
+    db,
+  );
   const scanner = new EventScanner(
     env.RPC_URL,
     env.CONTRACT_ADDRESS,
-    startingBlock,
+    scanFromBlock,
     db,
   );
 
