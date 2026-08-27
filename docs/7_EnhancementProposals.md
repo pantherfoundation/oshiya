@@ -201,7 +201,7 @@ _Implementation Considerations_:
 
 Hard Reset
 
-`docker run -e RPC_URL=.... -e SUBGRAPH_ID=QmUVLJABZYqpoEn8L9JWFzE1WJJLZMDQLoBKRQXJyABLEe -e CONTRACT_ADDRESS=0xC042Dd23517eDB7E38F7e92d2e38B6a1f03D7947 -e GENESIS_BLOCK_NUMBER=38811462 -e INTERVAL=20 -e PRIVATE_KEY=0x.... pantherprotocol/miner-client;`
+`docker run -e RPC_URL=.... -e SUBGRAPH_URL=https://subgraph.pantherdao.app/production-polygon -e CONTRACT_ADDRESS=0xC042Dd23517eDB7E38F7e92d2e38B6a1f03D7947 -e GENESIS_BLOCK_NUMBER=38811462 -e INTERVAL=20 -e PRIVATE_KEY=0x.... pantherprotocol/miner-client;`
 `&&`
 `yarn start`
 

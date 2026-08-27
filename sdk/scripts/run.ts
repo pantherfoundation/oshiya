@@ -24,7 +24,7 @@ async function main() {
   const zkProver = new ZKProver(env.PROTOCOL_VERSION);
 
   const [tree, startingBlock, insertedQueueIds] = await coldStart(
-    env.SUBGRAPH_ID,
+    env.SUBGRAPH_URL,
     env.GENESIS_BLOCK_NUMBER,
   );
 

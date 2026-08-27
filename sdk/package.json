@@ -21,7 +21,8 @@
     "claimReward:polygon": "env-cmd -f .env.polygon ts-node scripts/reward/claimReward.ts",
     "claimReward:base": "env-cmd -f .env.base ts-node scripts/reward/claimReward.ts",
     "build": "tsc",
-    "gen:queues": "ts-node tests/generate-queues.ts"
+    "gen:queues": "ts-node tests/generate-queues.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "files": [
     "lib/**/*.js",
