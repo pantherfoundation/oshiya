@@ -41,8 +41,8 @@ class QueryBuilder {
 export class Subgraph {
     private readonly url: string;
 
-    constructor(id: string) {
-        this.url = `https://api.thegraph.com/subgraphs/id/${id}`;
+    constructor(url: string) {
+        this.url = url;
     }
 
     private async fetchFromSubgraph(queryBuilder: QueryBuilder): Promise<any> {

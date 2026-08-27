@@ -178,7 +178,7 @@ Note: This step doesn't require the miner's private key
 The Panther Miner script needs certain configurations to be set in the `.env` file:
 
 1. `RPC_URL`: This is the URL of the RPC node.
-2. `SUBGRAPH_ID`: This is the ID of the subgraph.
+2. `SUBGRAPH_URL`: This is the Panther subgraph API endpoint, e.g. `https://subgraph.pantherdao.app/production-polygon`.
 3. `CONTRACT_ADDRESS`: This is the address of the BusTree Smart Contract.
 4. `GENESIS_BLOCK_NUMBER`: This represents the block number when the BusTree Smart Contract was deployed.
 5. `INTERVAL`: This is the duration between each repetitive execution in seconds.

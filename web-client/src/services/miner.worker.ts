@@ -40,14 +40,14 @@ async function handleMining(eventData: MinerClientParams) {
         rpcUrl,
         interval,
         address,
-        subgraphId,
+        subgraphUrl,
         genesisBlockNumber,
         minReward,
     } = eventData;
 
     // Initialize and set up all necessary components for the mining process
     const [tree, lastScannedBlock, insertedQueueIds] = await coldStart(
-        subgraphId,
+        subgraphUrl,
         Number(env.GENESIS_BLOCK_NUMBER),
         notify,
     );

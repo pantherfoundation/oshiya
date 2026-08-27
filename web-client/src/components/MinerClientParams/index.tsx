@@ -25,7 +25,7 @@ const MinerClientParamsForm = () => {
         privateKey: string;
         rpcUrl: string;
         address: string;
-        subgraphId: string;
+        subgraphUrl: string;
         genesisBlockNumber: string;
         minReward: string;
     }>({
@@ -33,7 +33,7 @@ const MinerClientParamsForm = () => {
         privateKey: '',
         rpcUrl: env.RPC_URL || '',
         address: env.CONTRACT_ADDRESS || '',
-        subgraphId: env.SUBGRAPH_ID || '',
+        subgraphUrl: env.SUBGRAPH_URL || '',
         genesisBlockNumber: env.GENESIS_BLOCK_NUMBER || '',
         minReward: env.MIN_REWARD || '0.001',
     });
@@ -84,7 +84,7 @@ const MinerClientParamsForm = () => {
                 message: 'Contract address field is required',
             },
             {
-                condition: !state.subgraphId,
+                condition: !state.subgraphUrl,
                 message: 'Subgraph ID field is required',
             },
         ];
@@ -122,8 +122,8 @@ const MinerClientParamsForm = () => {
                     <div className="w-full">
                         <Input
                             label="Subgraph ID"
-                            value={state.subgraphId}
-                            name="subgraphId"
+                            value={state.subgraphUrl}
+                            name="subgraphUrl"
                             onChange={updateStateHandler}
                         />
                     </div>
@@ -208,7 +208,7 @@ const MinerClientParamsForm = () => {
                             privateKey: state.privateKey,
                             rpcUrl: state.rpcUrl,
                             address: state.address,
-                            subgraphId: state.subgraphId,
+                            subgraphUrl: state.subgraphUrl,
                             genesisBlockNumber,
                             minReward: state.minReward,
                         };

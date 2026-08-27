@@ -18,7 +18,7 @@ A web client for the miner application that interacts with blockchain contracts.
    - `CONTRACT_ADDRESS`: Bus tree contract address
    - `INTERVAL`: Mining interval
    - `RPC_URL`: Chain RPC URL
-   - `SUBGRAPH_ID`: The subgraph ID
+   - `SUBGRAPH_URL`: The Panther subgraph API endpoint
 
 2. **Install Dependencies**
 

@@ -27,7 +27,7 @@ This repository is structured into code and [docs](docs/1_Introduction.md). The 
 Both versions of Oshiya require certain configuration settings, which can be defined in a `.env` file or through the web interface. Here are the necessary configuration parameters:
 
 -   `RPC_URL`: The URL of the RPC node.
--   `SUBGRAPH_ID`: The ID of the subgraph.
+-   `SUBGRAPH_URL`: The Panther subgraph API endpoint, e.g. `https://subgraph.pantherdao.app/production-polygon`.
 -   `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
 -   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
 -   `INTERVAL`: The time (in seconds) between each successive execution.
