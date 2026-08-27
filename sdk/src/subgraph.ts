@@ -233,11 +233,23 @@ export class Subgraph {
             ['utxo', 'queueId', 'utxoIndexInBatch'],
             fromBlock,
         );
-        return rows.map(row => ({
+        const utxos = rows.map(row => ({
             queueId: Number(row.queueId),
             utxo: row.utxo,
             utxoIndexInBatch: Number(row.utxoIndexInBatch),
         }));
+
+        // The commitment is computed over the leaves in queue order, and
+        // `MemCache` keeps them in the order they arrive rather than sorting.
+        // Paging is keyed on `id`, which is derived from the transaction hash,
+        // so rows come back in an order unrelated to the batch -- submitting
+        // that reverts with BT:E7, ERR_INVALID_LEAFS_COMMIT.
+        return utxos.sort((left, right) => {
+            if (left.queueId !== right.queueId) {
+                return left.queueId - right.queueId;
+            }
+            return left.utxoIndexInBatch - right.utxoIndexInBatch;
+        });
     }
 
     public async getOnboardedBatchesSince(
