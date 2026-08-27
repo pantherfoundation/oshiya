@@ -168,13 +168,27 @@ export class Subgraph {
      * after it.
      */
     public async getIndexedBlockNumber(): Promise<number> {
-        const queryBuilder = new QueryBuilder(
-            ['block { number }'],
-            '_meta',
-            '',
-        );
-        const data = await this.fetchFromSubgraph(queryBuilder);
-        return Number(data._meta.block.number);
+        // Deliberately not `_meta`, which reports the higher of the
+        // projection's two watermarks. They advance independently, so `_meta`
+        // can claim coverage the rows do not have -- and a scan origin taken
+        // from it skips blocks nothing ever indexed, stranding a queue with
+        // utxos on chain and none in the cache.
+        //
+        // The lower watermark is the only block every row is guaranteed to be
+        // present up to. Anything past it the chain scanner covers.
+        try {
+            const {data} = await axios.get(`${this.url}/health`, {
+                timeout: REQUEST_TIMEOUT_MS,
+            });
+            return Math.min(
+                Number(data.projection.last_completed_block),
+                Number(data.projection.chain_completed_block),
+            );
+        } catch {
+            // Not a Panther projection, or it cannot report progress. Preload
+            // nothing and let the scanner cover the whole range.
+            return -1;
+        }
     }
 
     /**
