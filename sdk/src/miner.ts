@@ -5,7 +5,7 @@ import {type ContractReceipt, Wallet, utils, BigNumber} from 'ethers';
 
 import {BusQueues, ForestTree} from './contract/forest-types';
 import {initializeBusContract} from './contracts';
-import {resolveMaxPriorityFeePerGas} from './gas';
+import {resolveMaxFeePerGas, resolveMaxPriorityFeePerGas} from './gas';
 import {LogFn, log as defaultLog} from './logging';
 import {BusQueueRecStructOutput} from './types';
 
@@ -204,9 +204,10 @@ export class Miner {
         .mul(Math.floor(gasMultiplier * 100))
         .div(100);
 
-      // Ensure maxFeePerGas is at least baseFeePerGas + maxPriorityFeePerGas
-      const baseFeePerGas = await this.forestContract.provider.getGasPrice();
-      const maxFeePerGas = baseFeePerGas.add(maxPriorityFeePerGas);
+      const maxFeePerGas = await resolveMaxFeePerGas(
+        this.forestContract.provider,
+        maxPriorityFeePerGas,
+      );
 
       // Fails the run rather than the attempt: retrying raises the gas price,
       // so an underfunded miner only gets further from being able to pay.
