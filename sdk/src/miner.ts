@@ -141,6 +141,45 @@ export class Miner {
     return hasQueuesWithUtxos;
   }
 
+  /**
+   * A node rejects `eth_estimateGas` for a type-2 transaction whose sender
+   * cannot cover `maxFeePerGas * gas`, and Infura reports that as a bare
+   * `-32603 Internal error`. ethers turns it into UNPREDICTABLE_GAS_LIMIT,
+   * which reads as a malformed call rather than an empty wallet, and the retry
+   * below then raises the gas price -- moving the requirement further out of
+   * reach on every attempt.
+   *
+   * So estimate without the fee fields, where balance is not consulted, and
+   * compare against it directly.
+   */
+  private async assertCanAffordGas(
+    minerAddress: string,
+    queueId: bigint,
+    publicSignals: any,
+    proof: any,
+    maxFeePerGas: BigNumber,
+  ): Promise<void> {
+    const gasLimit = await this.forestContract.estimateGas.onboardBusQueue(
+      minerAddress,
+      queueId,
+      publicSignals,
+      proof,
+    );
+    const required = maxFeePerGas.mul(gasLimit);
+    const balance = await this.forestContract.provider.getBalance(this.address);
+    if (balance.gte(required)) return;
+
+    throw new Error(
+      `Insufficient balance to submit onboardBusQueue: ${this.address} holds ` +
+        `${utils.formatEther(balance)} but needs ` +
+        `${utils.formatEther(required)} ` +
+        `(${gasLimit.toString()} gas at ${utils.formatUnits(
+          maxFeePerGas,
+          'gwei',
+        )} gwei). Fund the miner address.`,
+    );
+  }
+
   public async mineQueue(
     minerAddress: string,
     queueId: bigint,
@@ -168,6 +207,16 @@ export class Miner {
       // Ensure maxFeePerGas is at least baseFeePerGas + maxPriorityFeePerGas
       const baseFeePerGas = await this.forestContract.provider.getGasPrice();
       const maxFeePerGas = baseFeePerGas.add(maxPriorityFeePerGas);
+
+      // Fails the run rather than the attempt: retrying raises the gas price,
+      // so an underfunded miner only gets further from being able to pay.
+      await this.assertCanAffordGas(
+        minerAddress,
+        queueId,
+        publicSignals,
+        proof,
+        maxFeePerGas,
+      );
 
       // Log submission values
       this.log(`Submitting onboardBusQueue with:
