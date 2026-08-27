@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import {lookup as resolverLookup, resolve4} from 'dns';
-import {Agent} from 'https';
-
 import axios from 'axios';
 
 import {
@@ -16,37 +13,14 @@ import {
 const PAGINATION_WINDOW_SIZE = 1000;
 const REQUEST_ATTEMPTS = 4;
 const RETRY_BASE_DELAY_MS = 1000;
-// Without this a black-holed address blocks for the OS TCP timeout, around a
-// minute, before the next one is tried -- longer than simply giving up.
+// Bounds a stalled connection. Address-level failover is the runtime's job:
+// from Node 20 `autoSelectFamily` is on by default, so `net` walks every
+// address `dns.lookup` returns instead of giving up on the first. That is why
+// the miner requires Node 24 -- see `assertNodeVersion`.
 const REQUEST_TIMEOUT_MS = 15_000;
 
 function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Node resolves a hostname with `dns.lookup`, which asks the OS resolver for a
- * single address and never tries another one. When a host publishes several A
- * records and one of them is unroutable from the current network -- routine for
- * an anycast CDN -- every request hangs until ETIMEDOUT even though the other
- * address answers fine. `curl` survives this only because it walks the whole
- * list.
- *
- * Rotate through `resolve4` instead, one address per attempt, so a black-holed
- * edge costs a retry rather than the whole cold start.
- */
-function agentForAttempt(attempt: number): Agent {
-    return new Agent({
-        lookup(hostname, options, callback) {
-            resolve4(hostname, (error, addresses) => {
-                if (error || addresses.length === 0) {
-                    resolverLookup(hostname, options, callback);
-                    return;
-                }
-                callback(null, addresses[attempt % addresses.length], 4);
-            });
-        },
-    });
 }
 
 // Retried only for transport failures; a GraphQL error is deterministic and
@@ -64,10 +38,7 @@ async function requestSubgraph(url: string, query: string): Promise<any> {
             const response = await axios.post(
                 url,
                 {query},
-                {
-                    httpsAgent: agentForAttempt(attempt),
-                    timeout: REQUEST_TIMEOUT_MS,
-                },
+                {timeout: REQUEST_TIMEOUT_MS},
             );
 
             if (response.data.errors?.[0]?.message || response.status !== 200) {

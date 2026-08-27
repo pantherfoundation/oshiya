@@ -1,5 +1,6 @@
 import {ethers, utils} from 'ethers';
 import yargs from 'yargs';
+import {assertNodeVersion} from '../../src/node-version';
 
 import {resolveMaxPriorityFeePerGas} from '../../src/gas';
 
@@ -44,6 +45,7 @@ const argv = yargs(process.argv)
 const functionFragment = 'function claimMiningReward(address receiver)';
 
 async function main() {
+  assertNodeVersion();
     validateInput(argv);
     const contract = initializeContract(argv, functionFragment);
     const provider = contract.provider;

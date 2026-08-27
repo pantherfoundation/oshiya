@@ -1,6 +1,7 @@
 import {ethers} from 'ethers';
 import fs from 'fs';
 import yargs from 'yargs';
+import {assertNodeVersion} from '../../src/node-version';
 import {
     ClaimRewardWithSignatureArgs,
     initializeContract,
@@ -46,6 +47,7 @@ const functionFragment =
     'function claimMiningRewardWithSignature(address receiver, uint8 v, bytes32 r, bytes32 s)';
 
 async function main() {
+  assertNodeVersion();
     validateInput(argv);
     const contract = initializeContract(argv, functionFragment);
 

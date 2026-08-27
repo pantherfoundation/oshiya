@@ -5,6 +5,7 @@ import {BatchProcessing} from '../src/batch-processing';
 import {parseEnvVariables, logSettings} from '../src/env';
 import {EventScanner} from '../src/event-scanner';
 import {log} from '../src/logging';
+import {assertNodeVersion} from '../src/node-version';
 import {Miner} from '../src/miner';
 import {MiningStats} from '../src/mining-stats';
 import {QueueProcessing} from '../src/queue-processing';
@@ -13,6 +14,7 @@ import {ZKProver} from '../src/zk-prover';
 import {MemCache} from '../src/mem-cache';
 
 async function main() {
+  assertNodeVersion();
   const env = parseEnvVariables(process.env);
   await logSettings(env);
   const miner = new Miner(

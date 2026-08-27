@@ -68,5 +68,8 @@
     "transform": {
       "^.+\\.ts?$": "ts-jest"
     }
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
