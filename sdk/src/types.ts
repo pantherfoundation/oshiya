@@ -64,7 +64,7 @@ export type EnvVariables = {
   RPC_URL: string;
   CONTRACT_ADDRESS: string;
   INTERVAL: number;
-  SUBGRAPH_ID: string;
+  SUBGRAPH_URL: string;
   GENESIS_BLOCK_NUMBER: number;
   MIN_REWARD: string;
   PROTOCOL_VERSION: string;

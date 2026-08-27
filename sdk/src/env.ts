@@ -19,7 +19,7 @@ export const requiredVars: Array<keyof EnvVariables> = [
   'PRIVATE_KEY',
   'RPC_URL',
   'CONTRACT_ADDRESS',
-  'SUBGRAPH_ID',
+  'SUBGRAPH_URL',
   'GENESIS_BLOCK_NUMBER',
   'MIN_REWARD',
   'PROTOCOL_VERSION',
