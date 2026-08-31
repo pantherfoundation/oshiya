@@ -55,6 +55,7 @@ async function handleMining(eventData: MinerClientParams) {
     const scanner = new EventScanner(
         rpcUrl,
         address,
+        subgraphUrl,
         isFinite(lastScannedBlock)
             ? lastScannedBlock
             : Number(genesisBlockNumber),
