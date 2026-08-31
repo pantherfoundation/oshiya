@@ -66,16 +66,27 @@ export class Miner {
     const queuesWithMoreThanMinReward = queues.filter(q => {
       const meetsReward = q.reward.gte(utils.parseEther(this.minReward));
       const hasNoRemainingBlocks = q.remainingBlocks == 0;
+      /**
+       * A queue is opened empty the moment its predecessor is onboarded, and
+       * it stays that way until someone transacts. There is nothing to prove
+       * for it, so selecting it only dead-ends in `No UTXOs found for that
+       * queue` -- which reads as a broken cache rather than an idle chain.
+       *
+       * Reward alone does not exclude it: an empty queue has earned nothing,
+       * so it is filtered out wherever `MIN_REWARD` is above zero and slips
+       * through wherever it is zero, as on canary.
+       */
+      const hasUtxos = q.nUtxos > 0;
 
       this.log(
         `Queue ${q.queueId}: reward=${utils.formatEther(
           q.reward,
-        )} ZKP, remainingBlocks=${
+        )} ZKP, nUtxos=${q.nUtxos}, remainingBlocks=${
           q.remainingBlocks
-        }, meetsReward=${meetsReward}, hasNoRemainingBlocks=${hasNoRemainingBlocks}`,
+        }, meetsReward=${meetsReward}, hasNoRemainingBlocks=${hasNoRemainingBlocks}, hasUtxos=${hasUtxos}`,
       );
 
-      return meetsReward && hasNoRemainingBlocks;
+      return meetsReward && hasNoRemainingBlocks && hasUtxos;
     });
 
     this.log(
