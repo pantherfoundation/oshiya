@@ -7,7 +7,6 @@ import {BatchProcessing} from './batch-processing';
 import {bigintToBytes32} from './bigint-conversions';
 import {LogFn, log as defaultLog} from './logging';
 import {Miner} from './miner';
-import {MemCache} from './mem-cache';
 import {EMPTY_TREE_ROOT, MinerTree} from './miner-tree';
 import {MiningStats, addToListAndCount, logAndCount} from './mining-stats';
 import {QueueProcessing} from './queue-processing';
@@ -121,49 +120,6 @@ async function initializeMinerTree(
     filledBatches.sort((a, b) => a.batchIndex - b.batchIndex);
     filledBatches.forEach(batch => tree.insertBatch(batch));
     return [tree, filledBatches];
-}
-
-/**
- * Loads every queued utxo and onboarded batch the projection already holds
- * straight into the cache, and returns the block the chain scanner should start
- * from -- everything at or below the projection's watermark is covered here.
- *
- * This is the same data `EventScanner` would rebuild from `eth_getLogs`, except
- * it arrives in a couple of paged queries instead of thousands of sequential
- * 1000-block windows. Order does not matter: `MemCache` keys batches by queueId
- * and dedupes utxos on `utxoIndexInBatch`.
- *
- * The scanner still covers the tail, so freshness never depends on how far
- * behind the projection's watermark is.
- */
-export async function syncFromSubgraph(
-    subgraphUrl: string,
-    fromBlock: number,
-    db: MemCache,
-    log: LogFn = defaultLog,
-): Promise<number> {
-    const subgraph = new Subgraph(subgraphUrl);
-    const indexedBlock = await subgraph.getIndexedBlockNumber();
-
-    if (indexedBlock <= fromBlock) {
-        log(`Subgraph is at ${indexedBlock}; nothing to preload`);
-        return fromBlock;
-    }
-
-    const [utxos, batches] = await Promise.all([
-        subgraph.getQueuedUtxosSince(fromBlock),
-        subgraph.getOnboardedBatchesSince(fromBlock),
-    ]);
-
-    for (const batch of batches) db.storeEventBusBatchOnBoarded(batch);
-    for (const utxo of utxos) db.storeEventUtxoBusQueued(utxo);
-
-    log(
-        `Preloaded ${utxos.length} utxos and ${batches.length} batches from ` +
-            `the subgraph (${fromBlock} - ${indexedBlock}); ` +
-            `chain scanning resumes at ${indexedBlock + 1}`,
-    );
-    return indexedBlock + 1;
 }
 
 // Gets oldest block number excluding inserted queueIds
