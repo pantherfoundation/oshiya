@@ -57,6 +57,31 @@ async function requestSubgraph(url: string, query: string): Promise<any> {
     throw lastError;
 }
 
+/**
+ * Reads one block number out of the `/health` payload.
+ *
+ * Accepts the snake_case spelling too. The projection API serves camelCase now,
+ * and an operator upgrades their miner and the API on their own schedule, so
+ * either side may be the older one.
+ *
+ * Anything absent or non-numeric reads as -1 rather than NaN. NaN would survive
+ * every comparison the scanner makes -- `NaN <= cursor` and `NaN < currentBlock`
+ * are both false -- and settle into the cursor, where it silently ends scanning
+ * for the life of the process.
+ */
+function blockNumber(projection: unknown, field: string): number {
+    if (typeof projection !== 'object' || projection === null) return -1;
+
+    const snakeCase = field.replace(
+        /[A-Z]/g,
+        letter => `_${letter.toLowerCase()}`,
+    );
+    const record = projection as Record<string, unknown>;
+    const value = Number(record[field] ?? record[snakeCase]);
+    if (!Number.isFinite(value)) return -1;
+    return value;
+}
+
 // Subgraph GraphQL Query Builder
 class QueryBuilder {
     constructor(
@@ -163,26 +188,42 @@ export class Subgraph {
     }
 
     /**
-     * How far the projection has indexed. Events at or below this block are
-     * already available here, so the chain scanner only has to cover what comes
-     * after it.
+     * How far the projection covers. Events at or below this block are already
+     * available here, so the chain scanner only has to cover what comes after
+     * it.
+     *
+     * Two separate facts add up to that block.
+     *
+     * `lastCompletedBlock` and `chainCompletedBlock` say how far rows were
+     * written, and the lower of the two is the only block every row is
+     * guaranteed to be present up to -- they advance independently, and
+     * `chainCompletedBlock` is set to the sync target before the rows behind it
+     * land. This is why `_meta`, which reports the higher, is not used: a scan
+     * origin taken from it skips blocks nothing ever indexed, stranding a queue
+     * with utxos on chain and none in the cache.
+     *
+     * `checkedBlock` says how far the indexer has read the chain and found
+     * nothing to write. Neither watermark above moves while that holds, so on a
+     * quiet chain they freeze at the last block that carried an event and this
+     * one keeps climbing. Skipping to it is safe for the same reason it was
+     * recorded -- there is nothing in between to miss -- and it is the whole
+     * point: without it the scanner re-derives that emptiness one `eth_getLogs`
+     * page at a time, over a range that grows for as long as the chain is idle.
      */
     public async getIndexedBlockNumber(): Promise<number> {
-        // Deliberately not `_meta`, which reports the higher of the
-        // projection's two watermarks. They advance independently, so `_meta`
-        // can claim coverage the rows do not have -- and a scan origin taken
-        // from it skips blocks nothing ever indexed, stranding a queue with
-        // utxos on chain and none in the cache.
-        //
-        // The lower watermark is the only block every row is guaranteed to be
-        // present up to. Anything past it the chain scanner covers.
         try {
             const {data} = await axios.get(`${this.url}/health`, {
                 timeout: REQUEST_TIMEOUT_MS,
             });
-            return Math.min(
-                Number(data.projection.last_completed_block),
-                Number(data.projection.chain_completed_block),
+            const last = blockNumber(data.projection, 'lastCompletedBlock');
+            const chain = blockNumber(data.projection, 'chainCompletedBlock');
+            // Either one absent leaves no floor to raise, and `checkedBlock`
+            // alone says nothing about whether the rows below it landed.
+            if (last < 0 || chain < 0) return -1;
+
+            return Math.max(
+                Math.min(last, chain),
+                blockNumber(data.projection, 'checkedBlock'),
             );
         } catch {
             // Not a Panther projection, or it cannot report progress. Preload
