@@ -5,6 +5,7 @@
   "author": "Panther Tech Team",
   "license": "SEE LICENSE IN ../LICENSE",
   "scripts": {
+    "test:config": "node --test webpack.config.test.cjs",
     "start": "webpack-cli serve --mode=development --env development --hot",
     "check-types": "tsc --project tsconfig.json --noEmit --isolatedModules false",
     "build:dev": "yarn check-types && TARGET_ENV=development  webpack --mode=development --env development",

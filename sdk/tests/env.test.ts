@@ -39,3 +39,33 @@ describe('optional subgraph configuration', () => {
         },
     );
 });
+
+describe('numeric scan configuration', () => {
+    it.each(['INTERVAL', 'GENESIS_BLOCK_NUMBER'])(
+        'rejects malformed %s values',
+        name => {
+            for (const value of [
+                '10junk',
+                'abc',
+                '-1',
+                '1.5',
+                'Infinity',
+                '9007199254740992',
+                ' ',
+            ]) {
+                expect(() =>
+                    parseEnvVariables({...base, [name]: value}),
+                ).toThrow(name);
+            }
+        },
+    );
+    it('allows genesis block zero but requires a positive interval', () => {
+        expect(
+            parseEnvVariables({...base, GENESIS_BLOCK_NUMBER: '0'})
+                .GENESIS_BLOCK_NUMBER,
+        ).toBe(0);
+        expect(() => parseEnvVariables({...base, INTERVAL: '0'})).toThrow(
+            'INTERVAL',
+        );
+    });
+});

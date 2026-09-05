@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import axios from 'axios';
+import axios, {isAxiosError} from 'axios';
 
 import {
     BusBatchOnboardedEvent,
@@ -26,7 +26,7 @@ function delay(ms: number): Promise<void> {
 // Retried only for transport failures; a GraphQL error is deterministic and
 // would just fail the same way again.
 function isTransportError(error: unknown): boolean {
-    return axios.isAxiosError(error) && error.response === undefined;
+    return isAxiosError(error) && error.response === undefined;
 }
 
 function authHeaders(authToken?: string): Record<string, string> {
@@ -165,6 +165,14 @@ export class Subgraph {
             const onboardedBatches = data.busBatchOnboardeds.map(
                 (b: BusBatchOnboardedEvent) => ({
                     ...b,
+                    queueId: BigInt(b.queueId),
+                    batchRoot: BigInt(b.batchRoot),
+                    numUtxosInBatch: Number(b.numUtxosInBatch),
+                    leftLeafIndexInBusTree: Number(b.leftLeafIndexInBusTree),
+                    blockNumber:
+                        b.blockNumber === undefined
+                            ? undefined
+                            : Number(b.blockNumber),
                     batchIndex: Number(b.leftLeafIndexInBusTree >> 6),
                     branchIndex: Number(b.leftLeafIndexInBusTree >> 16),
                 }),
@@ -238,7 +246,16 @@ export class Subgraph {
                 Math.min(last, chain),
                 blockNumber(data.projection, 'checkedBlock'),
             );
-        } catch {
+        } catch (error) {
+            if (
+                isAxiosError(error) &&
+                (error.response?.status === 401 ||
+                    error.response?.status === 403)
+            ) {
+                throw new Error(
+                    `Subgraph authentication failed (HTTP ${error.response.status})`,
+                );
+            }
             // Not a Panther projection, or it cannot report progress. Preload
             // nothing and let the scanner cover the whole range.
             return -1;

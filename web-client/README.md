@@ -131,6 +131,9 @@ The form also accepts a masked optional token. Build-time environment values are
 
 The browser proof initializer requires `circuits.wasm`, `provingKey.zkey`, and
 `verificationKey.json` from the same protocol version. Webpack copies these
-from `sdk/src/wasm/production` by default; set `PROTOCOL_VERSION=canary` to
+from `sdk/src/wasm/production` by default; set `PROTOCOL_VERSION=canary` in
+`.env` or the shell (the shell takes precedence) to
 build against the canary artifacts.
 It passes those artifacts to the SDK without accessing the Node filesystem.
+
+Run `yarn test:config` to verify artifact selection from `.env` and shell overrides.

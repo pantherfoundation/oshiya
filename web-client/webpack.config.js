@@ -1,5 +1,8 @@
 /* eslint-disable */
 const path = require('path');
+const fs = require('fs');
+const envPath = path.resolve(__dirname, '.env');
+if (fs.existsSync(envPath)) process.loadEnvFile(envPath);
 const webpack = require('webpack');
 const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -165,7 +168,7 @@ module.exports = {
         // development mode, bypassing create-react-app's method of
         // supporting environment variables via REACT_APP_* prefix.
         // So use dotenv-webpack instead.
-        new Dotenv(),
+        new Dotenv({path: envPath, systemvars: true}),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.optimize.AggressiveMergingPlugin(),
         new webpack.ProvidePlugin({

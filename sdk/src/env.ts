@@ -45,7 +45,16 @@ export function parseEnvVariables(env: NodeJS.ProcessEnv): EnvVariables {
         }
 
         if (varName === 'INTERVAL' || varName === 'GENESIS_BLOCK_NUMBER') {
-            parsed[varName] = parseInt(env[varName]!);
+            const value = Number(env[varName]);
+            const minimum = varName === 'INTERVAL' ? 1 : 0;
+            if (
+                !env[varName]!.trim() ||
+                !Number.isSafeInteger(value) ||
+                value < minimum
+            ) {
+                throw new Error(`${varName} must be an integer >= ${minimum}`);
+            }
+            parsed[varName] = value;
         } else {
             parsed[varName] = env[varName]!;
         }

@@ -71,3 +71,62 @@ describe('subgraph authentication', () => {
         }
     });
 });
+
+describe('subgraph response handling', () => {
+    beforeEach(() => jest.resetAllMocks());
+
+    it.each([401, 403])(
+        'surfaces HTTP %s health authentication failures',
+        async status => {
+            jest.mocked(axios.isAxiosError).mockReturnValue(true);
+            get.mockRejectedValue({response: {status}});
+            await expect(
+                new Subgraph(
+                    'https://example.test',
+                    'test-token',
+                ).getIndexedBlockNumber(),
+            ).rejects.toThrow('Subgraph authentication failed');
+        },
+    );
+
+    it('retains the chain fallback when health is unavailable', async () => {
+        jest.mocked(axios.isAxiosError).mockReturnValue(true);
+        get.mockRejectedValue({response: {status: 404}});
+        await expect(
+            new Subgraph('https://example.test').getIndexedBlockNumber(),
+        ).resolves.toBe(-1);
+    });
+
+    it('normalizes GraphQL batch identifiers and roots to bigint', async () => {
+        post.mockResolvedValue({
+            status: 200,
+            data: {
+                data: {
+                    busBatchOnboardeds: [
+                        {
+                            queueId: '9007199254740993',
+                            batchRoot: '9007199254740995',
+                            leftLeafIndexInBusTree: '128',
+                            numUtxosInBatch: '5',
+                            blockNumber: '42',
+                            busTreeNewRoot: '10',
+                            busBranchNewRoot: '11',
+                        },
+                    ],
+                },
+            },
+        });
+        const batches = await new Subgraph(
+            'https://example.test',
+        ).getOnboardedBatches();
+        expect(batches[0]).toMatchObject({
+            queueId: BigInt('9007199254740993'),
+            batchRoot: BigInt('9007199254740995'),
+            leftLeafIndexInBusTree: 128,
+            numUtxosInBatch: 5,
+            blockNumber: 42,
+            batchIndex: 2,
+            branchIndex: 0,
+        });
+    });
+});
