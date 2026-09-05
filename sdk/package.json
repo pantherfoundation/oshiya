@@ -10,12 +10,19 @@
     "lint": "eslint '**/*.ts'",
     "lint:fix": "eslint --fix '**/*.ts'",
     "test": "jest",
-    "start": "ts-node scripts/run.ts",
+    "start": "env-cmd -f .env ts-node scripts/run.ts",
+    "start:canary": "env-cmd -f .env.canary ts-node scripts/run.ts",
+    "start:polygon": "env-cmd -f .env.polygon ts-node scripts/run.ts",
+    "start:base": "env-cmd -f .env.base ts-node scripts/run.ts",
     "generate:signature": "ts-node scripts/reward/generateSignature.ts",
     "claimRewardWithSignature": "ts-node scripts/reward/claimRewardWithSignature.ts",
     "claimReward": "ts-node scripts/reward/claimReward.ts",
+    "claimReward:canary": "env-cmd -f .env.canary ts-node scripts/reward/claimReward.ts",
+    "claimReward:polygon": "env-cmd -f .env.polygon ts-node scripts/reward/claimReward.ts",
+    "claimReward:base": "env-cmd -f .env.base ts-node scripts/reward/claimReward.ts",
     "build": "tsc",
-    "gen:queues": "ts-node tests/generate-queues.ts"
+    "gen:queues": "ts-node tests/generate-queues.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "files": [
     "lib/**/*.js",
@@ -31,6 +38,7 @@
     "big-integer": "^1.6.51",
     "circomlibjs": "^0.0.8",
     "dotenv": "^16.3.1",
+    "env-cmd": "^10.1.0",
     "ethers": "^5.7.2",
     "lodash": "^4.17.21",
     "snarkjs": "^0.4.10",
@@ -60,5 +68,8 @@
     "transform": {
       "^.+\\.ts?$": "ts-jest"
     }
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

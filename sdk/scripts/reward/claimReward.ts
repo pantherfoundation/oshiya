@@ -1,5 +1,9 @@
-import {ethers, BigNumber, utils} from 'ethers';
+import {ethers, utils} from 'ethers';
 import yargs from 'yargs';
+import {assertNodeVersion} from '../../src/node-version';
+
+import {resolveMaxPriorityFeePerGas} from '../../src/gas';
+
 import {
     initializeContract,
     ClaimRewardArgs,
@@ -16,20 +20,23 @@ const argv = yargs(process.argv)
     })
     .option('privateKey', {
         alias: 'pk',
-        description: 'Private key of the user triggering the function',
+        description: 'Private key of the user triggering the function (defaults to PRIVATE_KEY env)',
         type: 'string',
+        default: process.env.PRIVATE_KEY,
         demandOption: true,
     })
     .option('rpc', {
         alias: 'rpc',
-        description: 'RPC endpoint to connect to the blockchain',
+        description: 'RPC endpoint to connect to the blockchain (defaults to RPC_URL env)',
         type: 'string',
+        default: process.env.RPC_URL,
         demandOption: true,
     })
     .option('address', {
         alias: 'a',
-        description: 'Address of the ForestRoot contract',
+        description: 'Address of the ForestRoot contract (defaults to CONTRACT_ADDRESS env)',
         type: 'string',
+        default: process.env.CONTRACT_ADDRESS,
         demandOption: true,
     })
     .help()
@@ -38,6 +45,7 @@ const argv = yargs(process.argv)
 const functionFragment = 'function claimMiningReward(address receiver)';
 
 async function main() {
+  assertNodeVersion();
     validateInput(argv);
     const contract = initializeContract(argv, functionFragment);
     const provider = contract.provider;
@@ -47,7 +55,10 @@ async function main() {
 
     try {
         const feeData = await provider.getFeeData();
-        const maxPriorityFeePerGas = BigNumber.from(30_000_000_000); // 30 gwei
+        const maxPriorityFeePerGas = await resolveMaxPriorityFeePerGas(
+            provider,
+            feeData,
+        );
         const baseFeePerGas = feeData.lastBaseFeePerGas;
         if (!baseFeePerGas) {
           throw new Error("Could not retrieve base fee, cannot proceed with fee estimation.");

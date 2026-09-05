@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import {join, resolve} from 'path';
-
-import dotenv from 'dotenv';
-
 import {BatchProcessing} from '../src/batch-processing';
 import {parseEnvVariables, logSettings} from '../src/env';
 import {EventScanner} from '../src/event-scanner';
 import {log} from '../src/logging';
+import {assertNodeVersion} from '../src/node-version';
 import {Miner} from '../src/miner';
 import {MiningStats} from '../src/mining-stats';
 import {QueueProcessing} from '../src/queue-processing';
@@ -16,9 +13,8 @@ import {coldStart, doWork} from '../src/runner';
 import {ZKProver} from '../src/zk-prover';
 import {MemCache} from '../src/mem-cache';
 
-dotenv.config({path: resolve(__dirname, '../.env')});
-
 async function main() {
+    assertNodeVersion();
     const env = parseEnvVariables(process.env);
     await logSettings(env);
     const miner = new Miner(
@@ -27,13 +23,10 @@ async function main() {
         env.CONTRACT_ADDRESS,
         env.MIN_REWARD,
     );
-    const zkProver = new ZKProver(
-        join(__dirname, '../src/wasm/circuits.wasm'),
-        join(__dirname, '../src/wasm/provingKey.zkey'),
-    );
+    const zkProver = new ZKProver(env.PROTOCOL_VERSION);
 
     const [tree, startingBlock, insertedQueueIds] = await coldStart(
-        env.SUBGRAPH_ID,
+        env.SUBGRAPH_URL,
         env.GENESIS_BLOCK_NUMBER,
         log,
         env.SUBGRAPH_AUTH_TOKEN,
@@ -43,10 +36,12 @@ async function main() {
     const scanner = new EventScanner(
         env.RPC_URL,
         env.CONTRACT_ADDRESS,
+        env.SUBGRAPH_URL,
         startingBlock,
         db,
         log,
         env.PAGE_SIZE,
+        env.SUBGRAPH_AUTH_TOKEN,
     );
 
     const batchProcessing = new BatchProcessing(tree, scanner, db);

@@ -8,27 +8,34 @@ import {ForestTree} from './contract/forest-types';
 import {initializeReadOnlyBusContract} from './contracts';
 import {LogFn, log as defaultLog} from './logging';
 import {MemCache} from './mem-cache';
+import {Subgraph} from './subgraph';
 import {BusBatchOnboardedEventRecord, UtxoBusQueuedEventRecord} from './types';
 
-const DEFAULT_PAGE_SIZE = 1000;
+const PAGE_SIZE = 1_000; // Amount of blocks to scan at once
 
 export class EventScanner {
     private contract: ForestTree;
+    private subgraph: Subgraph;
     private db: MemCache;
     private filters: EventFilter[];
     private startingBlock: number;
     private log: LogFn;
-    private pageSize: number;
 
     constructor(
         rpcEndpoint: string,
         address: string,
+        subgraphUrl: string,
         startingBlock: number,
         db: MemCache,
         log: LogFn = defaultLog,
-        pageSize: number = DEFAULT_PAGE_SIZE,
+        private readonly pageSize: number = PAGE_SIZE,
+        subgraphAuthToken?: string,
     ) {
+        if (!Number.isSafeInteger(pageSize) || pageSize <= 0) {
+            throw new Error('Page size must be a positive integer');
+        }
         this.contract = initializeReadOnlyBusContract(rpcEndpoint, address);
+        this.subgraph = new Subgraph(subgraphUrl, subgraphAuthToken);
         this.filters = [
             this.buildUtxoBusQueuedFilter(),
             this.buildBusBatchOnboardedFilter(),
@@ -36,10 +43,79 @@ export class EventScanner {
         this.db = db;
         this.startingBlock = startingBlock;
         this.log = log;
-        this.pageSize = pageSize;
     }
 
+    /**
+     * Brings the cache up to the chain tip from both sources, cheapest first.
+     *
+     * The subgraph half moves the cursor to the projection's watermark, so the
+     * chain half only ever covers the tail the projection has not reached yet.
+     */
     public async scan(): Promise<void> {
+        await this.syncFromSubgraph();
+        await this.scanChain();
+    }
+
+    /**
+     * Loads every queued utxo and onboarded batch the projection already holds
+     * into the cache, and moves the cursor to its watermark -- everything at or
+     * below that block is covered here.
+     *
+     * This is the same data `scanChain` rebuilds from `eth_getLogs`, except it
+     * arrives in a couple of paged queries instead of thousands of sequential
+     * 1000-block windows. Order does not matter: `MemCache` keys batches by
+     * queueId and dedupes utxos on `utxoIndexInBatch`.
+     *
+     * It runs every cycle rather than once at startup, because it is the only
+     * half that cannot wedge. A page `eth_getLogs` will not serve -- a block
+     * range or response size over the provider's limit -- leaves the cursor
+     * parked on that page, and every later cycle reissues the identical
+     * rejected request. Nothing then reaches the cache for the life of the
+     * process: `getUtxosForQueueId` keeps returning empty for a queue that has
+     * utxos on chain, the miner reports `No UTXOs found for that queue`, and it
+     * takes a restart to mine anything again. Refreshing from the projection
+     * each cycle both fills the cache and carries the cursor past the page the
+     * provider refused.
+     */
+    private async syncFromSubgraph(): Promise<void> {
+        try {
+            const indexedBlock = await this.subgraph.getIndexedBlockNumber();
+            if (indexedBlock < 0) {
+                this.log(
+                    'Subgraph cannot report its indexing progress; ' +
+                        'covering every block by scanning the chain',
+                );
+                return;
+            }
+            if (indexedBlock <= this.startingBlock) return;
+
+            const fromBlock = this.startingBlock;
+            const [utxos, batches] = await Promise.all([
+                this.subgraph.getQueuedUtxosSince(fromBlock),
+                this.subgraph.getOnboardedBatchesSince(fromBlock),
+            ]);
+
+            for (const batch of batches) {
+                this.db.storeEventBusBatchOnBoarded(batch);
+            }
+            for (const utxo of utxos) {
+                this.db.storeEventUtxoBusQueued(utxo);
+            }
+
+            this.startingBlock = indexedBlock + 1;
+            this.log(
+                `Loaded ${utxos.length} utxos and ${batches.length} batches ` +
+                    `from the subgraph (${fromBlock} - ${indexedBlock}); ` +
+                    `chain scanning resumes at ${this.startingBlock}`,
+            );
+        } catch (error: any) {
+            // Leaves the cursor where it was, so the chain scan below still
+            // covers these blocks -- one window at a time instead of in bulk.
+            this.log(`Error syncing from the subgraph: ${error.message}`);
+        }
+    }
+
+    private async scanChain(): Promise<void> {
         try {
             this.log('Getting the current block number...');
             const currentBlock = Number(
@@ -48,10 +124,18 @@ export class EventScanner {
             const totalBlocks = currentBlock - this.startingBlock;
             let scannedBlocks = 0;
 
-            for (let i = this.startingBlock; i < currentBlock; i += this.pageSize) {
+            for (
+                let i = this.startingBlock;
+                i < currentBlock;
+                i += this.pageSize
+            ) {
                 const endBlock = Math.min(i + this.pageSize, currentBlock);
-                const progress = Math.floor((scannedBlocks / totalBlocks) * 100);
-                this.log(`Scanning block range ${i} - ${endBlock} [${progress}%]`);
+                const progress = Math.floor(
+                    (scannedBlocks / totalBlocks) * 100,
+                );
+                this.log(
+                    `Scanning block range ${i} - ${endBlock} [${progress}%]`,
+                );
                 await this.scanBlockRangeAndSave(i, endBlock);
                 this.startingBlock = endBlock;
                 scannedBlocks += endBlock - i;
@@ -102,8 +186,13 @@ export class EventScanner {
         }
 
         // Log summary of events found
-        const totalEvents = Object.values(eventCounts).reduce((sum, count) => sum + count, 0);
-        this.log(`Found ${totalEvents} events in block range ${fromBlock}-${toBlock}`);
+        const totalEvents = Object.values(eventCounts).reduce(
+            (sum, count) => sum + count,
+            0,
+        );
+        this.log(
+            `Found ${totalEvents} events in block range ${fromBlock}-${toBlock}`,
+        );
     }
 
     private mapBusBatchOnboardedEvent(

@@ -11,8 +11,8 @@ export type MinerClientParams = {
     privateKey: string;
     rpcUrl: string;
     address: string;
-    subgraphId: string;
-    subgraphAuthToken: string;
+    subgraphUrl: string;
+    subgraphAuthToken?: string;
     genesisBlockNumber: number;
     minReward: string;
 };

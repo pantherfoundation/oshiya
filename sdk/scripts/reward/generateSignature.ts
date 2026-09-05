@@ -2,6 +2,7 @@ import {ethers} from 'ethers';
 import fs from 'fs/promises';
 import path from 'path';
 import yargs from 'yargs';
+import {assertNodeVersion} from '../../src/node-version';
 import {generateSignature, GenerateSignatureArgs} from './utils';
 
 const argv = yargs(process.argv.slice(2))
@@ -39,6 +40,7 @@ const argv = yargs(process.argv.slice(2))
     .alias('help', 'h').argv as GenerateSignatureArgs;
 
 async function main() {
+  assertNodeVersion();
     const provider = new ethers.providers.JsonRpcProvider(argv.rpc);
     const wallet = new ethers.Wallet(argv.privateKey, provider);
 

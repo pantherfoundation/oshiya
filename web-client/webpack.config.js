@@ -174,11 +174,15 @@ module.exports = {
         new CopyWebpackPlugin({
             patterns: [
                 {
-                    from: 'public/circuits.wasm',
+                    from: `../sdk/src/wasm/${process.env.PROTOCOL_VERSION || 'production'}/circuits.wasm`,
                     to: '[name][ext]'
                 },
                 {
-                    from: 'public/provingKey.zkey',
+                    from: `../sdk/src/wasm/${process.env.PROTOCOL_VERSION || 'production'}/provingKey.zkey`,
+                    to: '[name][ext]'
+                },
+                {
+                    from: `../sdk/src/wasm/${process.env.PROTOCOL_VERSION || 'production'}/verificationKey.json`,
                     to: '[name][ext]'
                 }
             ]

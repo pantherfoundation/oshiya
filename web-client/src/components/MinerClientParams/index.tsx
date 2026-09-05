@@ -25,7 +25,7 @@ const MinerClientParamsForm = () => {
         privateKey: string;
         rpcUrl: string;
         address: string;
-        subgraphId: string;
+        subgraphUrl: string;
         subgraphAuthToken: string;
         genesisBlockNumber: string;
         minReward: string;
@@ -34,7 +34,7 @@ const MinerClientParamsForm = () => {
         privateKey: '',
         rpcUrl: env.RPC_URL || '',
         address: env.CONTRACT_ADDRESS || '',
-        subgraphId: env.SUBGRAPH_ID || '',
+        subgraphUrl: env.SUBGRAPH_URL || '',
         subgraphAuthToken: env.SUBGRAPH_AUTH_TOKEN || '',
         genesisBlockNumber: env.GENESIS_BLOCK_NUMBER || '',
         minReward: env.MIN_REWARD || '0.001',
@@ -86,12 +86,8 @@ const MinerClientParamsForm = () => {
                 message: 'Contract address field is required',
             },
             {
-                condition: !state.subgraphId,
-                message: 'Subgraph ID field is required',
-            },
-            {
-                condition: !state.subgraphAuthToken,
-                message: 'Subgraph Auth Token field is required',
+                condition: !state.subgraphUrl,
+                message: 'Subgraph URL field is required',
             },
         ];
 
@@ -127,23 +123,22 @@ const MinerClientParamsForm = () => {
                     </div>
                     <div className="w-full">
                         <Input
-                            label="Subgraph ID"
-                            value={state.subgraphId}
-                            name="subgraphId"
+                            label="Subgraph URL"
+                            value={state.subgraphUrl}
+                            name="subgraphUrl"
                             onChange={updateStateHandler}
                         />
                     </div>
                 </div>
-                <div className="flex items-end justify-between space-x-5 mb-4">
-                    <div className="w-full">
-                        <Input
-                            label="Subgraph Auth Token"
-                            value={state.subgraphAuthToken}
-                            name="subgraphAuthToken"
-                            onChange={updateStateHandler}
-                            type="password"
-                        />
-                    </div>
+
+                <div className="mb-4">
+                    <Input
+                        label="Subgraph auth token (optional)"
+                        type="password"
+                        value={state.subgraphAuthToken}
+                        name="subgraphAuthToken"
+                        onChange={updateStateHandler}
+                    />
                 </div>
 
                 <div className="flex items-end justify-between space-x-5 mb-4">
@@ -225,8 +220,9 @@ const MinerClientParamsForm = () => {
                             privateKey: state.privateKey,
                             rpcUrl: state.rpcUrl,
                             address: state.address,
-                            subgraphId: state.subgraphId,
-                            subgraphAuthToken: state.subgraphAuthToken,
+                            subgraphUrl: state.subgraphUrl,
+                            subgraphAuthToken:
+                                state.subgraphAuthToken || undefined,
                             genesisBlockNumber,
                             minReward: state.minReward,
                         };

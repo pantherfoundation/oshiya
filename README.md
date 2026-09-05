@@ -27,12 +27,18 @@ This repository is structured into code and [docs](docs/1_Introduction.md). The 
 Both versions of Oshiya require certain configuration settings, which can be defined in a `.env` file or through the web interface. Here are the necessary configuration parameters:
 
 -   `RPC_URL`: The URL of the RPC node.
--   `SUBGRAPH_ID`: The ID of the subgraph.
+-   `SUBGRAPH_URL`: The Panther subgraph API endpoint, e.g. `https://subgraph.pantherdao.app/production-polygon`.
 -   `CONTRACT_ADDRESS`: The address of the BusTree Smart Contract.
 -   `GENESIS_BLOCK_NUMBER`: block number when the BusTree Smart Contract was deployed.
 -   `INTERVAL`: The time (in seconds) between each successive execution.
 -   `PRIVATE_KEY`: The private key of the wallet that will submit the proofs as a Miner.
 -   `MIN_REWARD`: The minimum reward for a queue to be considered for mining.
+-   `PROTOCOL_VERSION`: The protocol version that the miner will be running against. The value can be either `production` or `canary`.
+
+## Running both Canary and Production versions simultaneously
+
+- To run the canary miner, add the canary configuration to a `.env.canary` file and run the npm script `npm run start:canary`. NOTE: remember to set the `PROTOCOL_VERSION` to `canary` in the `.env.canary` file.
+- In another terminal, you can run the production miner by adding the production configuration to a `.env.polygon` file and run the npm script `npm run start:polygon`. NOTE: remember to set the `PROTOCOL_VERSION` to `production` in the `.env.polygon` file.
 
 ## Contributing
 

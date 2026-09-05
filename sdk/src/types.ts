@@ -64,11 +64,12 @@ export type EnvVariables = {
     RPC_URL: string;
     CONTRACT_ADDRESS: string;
     INTERVAL: number;
-    SUBGRAPH_ID: string;
-    SUBGRAPH_AUTH_TOKEN: string;
+    SUBGRAPH_URL: string;
+    SUBGRAPH_AUTH_TOKEN?: string;
+    PAGE_SIZE?: number;
     GENESIS_BLOCK_NUMBER: number;
     MIN_REWARD: string;
-    PAGE_SIZE: number;
+    PROTOCOL_VERSION: string;
 };
 
 export type ProofInputs = {

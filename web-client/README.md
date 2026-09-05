@@ -18,7 +18,7 @@ A web client for the miner application that interacts with blockchain contracts.
    - `CONTRACT_ADDRESS`: Bus tree contract address
    - `INTERVAL`: Mining interval
    - `RPC_URL`: Chain RPC URL
-   - `SUBGRAPH_ID`: The subgraph ID
+   - `SUBGRAPH_URL`: The Panther subgraph API endpoint
 
 2. **Install Dependencies**
 
@@ -121,3 +121,16 @@ Copyright 2024 Panther Protocol Foundation
 
 
 
+
+## Authenticated subgraph endpoints
+
+`SUBGRAPH_URL` remains the full endpoint URL. Optionally provide
+`SUBGRAPH_AUTH_TOKEN` to send a bearer token on GraphQL and health requests,
+including scanner refreshes. Public endpoints work without a token.
+The form also accepts a masked optional token. Build-time environment values are visible in browser bundles; enter private tokens at runtime instead.
+
+The browser proof initializer requires `circuits.wasm`, `provingKey.zkey`, and
+`verificationKey.json` from the same protocol version. Webpack copies these
+from `sdk/src/wasm/production` by default; set `PROTOCOL_VERSION=canary` to
+build against the canary artifacts.
+It passes those artifacts to the SDK without accessing the Node filesystem.

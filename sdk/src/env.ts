@@ -5,16 +5,26 @@ import {providers, utils, Wallet} from 'ethers';
 
 import {EnvVariables} from './types';
 
-type RequiredEnvVars = Exclude<keyof EnvVariables, 'PAGE_SIZE'>;
-export const requiredVars: Array<RequiredEnvVars> = [
+const nativeSymbolByChainId: Record<number, string> = {
+    1: 'ETH',
+    137: 'POL',
+    8453: 'ETH',
+    80001: 'POL',
+    80002: 'POL',
+    84532: 'ETH',
+};
+
+export const requiredVars: Array<
+    Exclude<keyof EnvVariables, 'SUBGRAPH_AUTH_TOKEN' | 'PAGE_SIZE'>
+> = [
     'INTERVAL',
     'PRIVATE_KEY',
     'RPC_URL',
     'CONTRACT_ADDRESS',
-    'SUBGRAPH_ID',
-    'SUBGRAPH_AUTH_TOKEN',
+    'SUBGRAPH_URL',
     'GENESIS_BLOCK_NUMBER',
     'MIN_REWARD',
+    'PROTOCOL_VERSION',
 ];
 
 function logEnvVariable(
@@ -41,8 +51,14 @@ export function parseEnvVariables(env: NodeJS.ProcessEnv): EnvVariables {
         }
     }
 
-    // Optional PAGE_SIZE with default of 1000
-    parsed.PAGE_SIZE = env.PAGE_SIZE ? parseInt(env.PAGE_SIZE) : 1000;
+    parsed.SUBGRAPH_AUTH_TOKEN = env.SUBGRAPH_AUTH_TOKEN || undefined;
+    if (env.PAGE_SIZE) {
+        const pageSize = Number(env.PAGE_SIZE);
+        if (!Number.isSafeInteger(pageSize) || pageSize <= 0) {
+            throw new Error('PAGE_SIZE must be a positive integer');
+        }
+        parsed.PAGE_SIZE = pageSize;
+    }
 
     return parsed as EnvVariables;
 }
@@ -58,10 +74,14 @@ export async function logSettings(env: EnvVariables): Promise<void> {
 
             // Get the balance of the miner address
             const provider = new providers.JsonRpcProvider(env.RPC_URL);
-            const balance = await provider.getBalance(minerAddress);
+            const [balance, network] = await Promise.all([
+                provider.getBalance(minerAddress),
+                provider.getNetwork(),
+            ]);
+            const symbol = nativeSymbolByChainId[network.chainId] ?? 'ETH';
             logEnvVariable(
                 'MINER_BALANCE',
-                utils.formatEther(balance) + ' POL',
+                `${utils.formatEther(balance)} ${symbol}`,
             );
         } else {
             logEnvVariable(v, env[v]);

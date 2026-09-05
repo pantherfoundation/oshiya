@@ -1,0 +1,19 @@
+/**
+ * `tsconfig.json` only includes `src`, because adding `scripts` there would
+ * give the build two roots and emit `lib/src/...` alongside `lib/scripts/...`,
+ * breaking the `main: lib/index.js` entrypoint.
+ *
+ * So the entrypoints under `scripts/` were only ever typechecked by ts-node at
+ * run time, which is how a rename landed in `src` and left `scripts/run.ts`
+ * calling a property that no longer existed -- every `start:*` script failed at
+ * launch with a compile error that no build step would have caught.
+ *
+ * This config typechecks both without emitting anything.
+ */
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "include": ["src", "scripts"]
+}

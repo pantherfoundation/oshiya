@@ -178,7 +178,7 @@ Note: This step doesn't require the miner's private key
 The Panther Miner script needs certain configurations to be set in the `.env` file:
 
 1. `RPC_URL`: This is the URL of the RPC node.
-2. `SUBGRAPH_ID`: This is the ID of the subgraph.
+2. `SUBGRAPH_URL`: This is the Panther subgraph API endpoint, e.g. `https://subgraph.pantherdao.app/production-polygon`.
 3. `CONTRACT_ADDRESS`: This is the address of the BusTree Smart Contract.
 4. `GENESIS_BLOCK_NUMBER`: This represents the block number when the BusTree Smart Contract was deployed.
 5. `INTERVAL`: This is the duration between each repetitive execution in seconds.
@@ -193,3 +193,15 @@ improvements, please open an issue or submit a pull request.
 ## License
 
 This project is licensed under the BUSL License. See the [LICENSE](../LICENSE) file for details.
+
+## Authenticated subgraph endpoints
+
+`SUBGRAPH_URL` remains the full endpoint URL. Optionally provide
+`SUBGRAPH_AUTH_TOKEN` to send a bearer token on GraphQL and health requests,
+including scanner refreshes. Public endpoints work without a token.
+`PAGE_SIZE` optionally sets a positive integer block-scan window; the default is 1000.
+
+Browser consumers construct `ZKProver` with `{ wasmFilePath, zKeyPath,
+verificationKey }` loaded from matching public artifacts. The string constructor
+continues loading versioned artifacts from disk for the Node miner. Both paths
+verify generated proofs before returning them.

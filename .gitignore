@@ -4,6 +4,9 @@ sdk/node_modules
 sdk/src/types
 sdk/.env
 sdk/lib
+sdk/.env.canary
+sdk/.env.polygon
+sdk/.env.base
 
 web-client/node_modules
 web-client/build
