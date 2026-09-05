@@ -41,6 +41,7 @@ async function handleMining(eventData: MinerClientParams) {
         interval,
         address,
         subgraphUrl,
+        subgraphAuthToken,
         genesisBlockNumber,
         minReward,
     } = eventData;
@@ -50,6 +51,7 @@ async function handleMining(eventData: MinerClientParams) {
         subgraphUrl,
         Number(env.GENESIS_BLOCK_NUMBER),
         notify,
+        subgraphAuthToken,
     );
     const db = new MemCache(insertedQueueIds, notify);
     const scanner = new EventScanner(
@@ -61,6 +63,8 @@ async function handleMining(eventData: MinerClientParams) {
             : Number(genesisBlockNumber),
         db,
         notify,
+        undefined,
+        subgraphAuthToken,
     );
     const miner = new Miner(privateKey, rpcUrl, address, minReward, notify);
     const circuitWasmPath = 'circuits.wasm';
@@ -93,7 +97,15 @@ async function handleMining(eventData: MinerClientParams) {
                 `Required files not found: ${missingFiles}. ZKProver will not be initialized.`,
             );
         } else {
-            zkProver = new ZKProver(circuitWasmPath, provingKeyPath);
+            const verificationKeyResponse = await fetch('verificationKey.json');
+            if (!verificationKeyResponse.ok) {
+                throw new Error('Verification key could not be loaded');
+            }
+            zkProver = new ZKProver({
+                wasmFilePath: circuitWasmPath,
+                zKeyPath: provingKeyPath,
+                verificationKey: await verificationKeyResponse.json(),
+            });
             notify('ZKProver initialized successfully.');
         }
     } catch (error) {

@@ -28,9 +28,14 @@ export class EventScanner {
         startingBlock: number,
         db: MemCache,
         log: LogFn = defaultLog,
+        private readonly pageSize: number = PAGE_SIZE,
+        subgraphAuthToken?: string,
     ) {
+        if (!Number.isSafeInteger(pageSize) || pageSize <= 0) {
+            throw new Error('Page size must be a positive integer');
+        }
         this.contract = initializeReadOnlyBusContract(rpcEndpoint, address);
-        this.subgraph = new Subgraph(subgraphUrl);
+        this.subgraph = new Subgraph(subgraphUrl, subgraphAuthToken);
         this.filters = [
             this.buildUtxoBusQueuedFilter(),
             this.buildBusBatchOnboardedFilter(),
@@ -119,10 +124,18 @@ export class EventScanner {
             const totalBlocks = currentBlock - this.startingBlock;
             let scannedBlocks = 0;
 
-            for (let i = this.startingBlock; i < currentBlock; i += PAGE_SIZE) {
-                const endBlock = Math.min(i + PAGE_SIZE, currentBlock);
-                const progress = Math.floor((scannedBlocks / totalBlocks) * 100);
-                this.log(`Scanning block range ${i} - ${endBlock} [${progress}%]`);
+            for (
+                let i = this.startingBlock;
+                i < currentBlock;
+                i += this.pageSize
+            ) {
+                const endBlock = Math.min(i + this.pageSize, currentBlock);
+                const progress = Math.floor(
+                    (scannedBlocks / totalBlocks) * 100,
+                );
+                this.log(
+                    `Scanning block range ${i} - ${endBlock} [${progress}%]`,
+                );
                 await this.scanBlockRangeAndSave(i, endBlock);
                 this.startingBlock = endBlock;
                 scannedBlocks += endBlock - i;
@@ -173,8 +186,13 @@ export class EventScanner {
         }
 
         // Log summary of events found
-        const totalEvents = Object.values(eventCounts).reduce((sum, count) => sum + count, 0);
-        this.log(`Found ${totalEvents} events in block range ${fromBlock}-${toBlock}`);
+        const totalEvents = Object.values(eventCounts).reduce(
+            (sum, count) => sum + count,
+            0,
+        );
+        this.log(
+            `Found ${totalEvents} events in block range ${fromBlock}-${toBlock}`,
+        );
     }
 
     private mapBusBatchOnboardedEvent(
