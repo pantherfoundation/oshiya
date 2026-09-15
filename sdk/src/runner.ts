@@ -78,11 +78,18 @@ export async function coldStart(
     subgraphUrl: string,
     genesisBlockNumber: number,
     log: LogFn = defaultLog,
+    subgraphAuthToken?: string,
 ): Promise<[MinerTree, number, number[]]> {
     log('Starting cold start');
-    const [tree, filledBatches] = await initializeMinerTree(subgraphUrl);
+    const [tree, filledBatches] = await initializeMinerTree(
+        subgraphUrl,
+        subgraphAuthToken,
+    );
     const insertedQueueIds = filledBatches.map(batch => Number(batch.queueId));
-    const startingBlock = await getOldestBlockNumber(subgraphUrl);
+    const startingBlock = await getOldestBlockNumber(
+        subgraphUrl,
+        subgraphAuthToken,
+    );
 
     const blockNumber = Math.max(
         genesisBlockNumber,
@@ -100,9 +107,10 @@ export async function coldStart(
 // Initializes MinerTree and returns sorted onboarded batches
 async function initializeMinerTree(
     subgraphUrl: string,
+    subgraphAuthToken?: string,
 ): Promise<[MinerTree, BusBatchOnboardedEvent[]]> {
     const tree = new MinerTree();
-    const subgraph = new Subgraph(subgraphUrl);
+    const subgraph = new Subgraph(subgraphUrl, subgraphAuthToken);
     const filledBranches = await subgraph.getFilledBranches();
     filledBranches.sort((a, b) => a.branchIndex - b.branchIndex);
     filledBranches.forEach(branch => {
@@ -125,8 +133,9 @@ async function initializeMinerTree(
 // Gets oldest block number excluding inserted queueIds
 async function getOldestBlockNumber(
     subgraphUrl: string,
+    subgraphAuthToken?: string,
 ): Promise<number | null> {
-    const subgraph = new Subgraph(subgraphUrl);
+    const subgraph = new Subgraph(subgraphUrl, subgraphAuthToken);
     return subgraph.getOldestBlockNumber();
 }
 

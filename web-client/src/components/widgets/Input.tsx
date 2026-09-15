@@ -9,12 +9,17 @@ const Input: React.FC<{
     required?: boolean;
     type?: 'text' | 'password';
 }> = ({label, onChange, placeholder, required, value, name, type}) => {
+    const id = React.useId();
     return (
         <div>
-            <label className="block mb-2 text-sm font-medium text-gray-900">
+            <label
+                htmlFor={id}
+                className="block mb-2 text-sm font-medium text-gray-900"
+            >
                 {label} {required ? '*' : ''}
             </label>
             <input
+                id={id}
                 type={type || 'text'}
                 value={value}
                 name={name}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright 2024 Panther Protocol Foundation
 
-import axios from 'axios';
+import axios, {isAxiosError} from 'axios';
 
 import {
     BusBatchOnboardedEvent,
@@ -26,11 +26,19 @@ function delay(ms: number): Promise<void> {
 // Retried only for transport failures; a GraphQL error is deterministic and
 // would just fail the same way again.
 function isTransportError(error: unknown): boolean {
-    return axios.isAxiosError(error) && error.response === undefined;
+    return isAxiosError(error) && error.response === undefined;
+}
+
+function authHeaders(authToken?: string): Record<string, string> {
+    return authToken ? {Authorization: `Bearer ${authToken}`} : {};
 }
 
 // Handles all Subgraph API requests
-async function requestSubgraph(url: string, query: string): Promise<any> {
+async function requestSubgraph(
+    url: string,
+    query: string,
+    authToken?: string,
+): Promise<any> {
     let lastError: unknown;
 
     for (let attempt = 0; attempt < REQUEST_ATTEMPTS; attempt++) {
@@ -38,7 +46,7 @@ async function requestSubgraph(url: string, query: string): Promise<any> {
             const response = await axios.post(
                 url,
                 {query},
-                {timeout: REQUEST_TIMEOUT_MS},
+                {timeout: REQUEST_TIMEOUT_MS, headers: authHeaders(authToken)},
             );
 
             if (response.data.errors?.[0]?.message || response.status !== 200) {
@@ -107,12 +115,16 @@ class QueryBuilder {
 export class Subgraph {
     private readonly url: string;
 
-    constructor(url: string) {
+    constructor(url: string, private readonly authToken?: string) {
         this.url = url;
     }
 
     private async fetchFromSubgraph(queryBuilder: QueryBuilder): Promise<any> {
-        return await requestSubgraph(this.url, queryBuilder.build());
+        return await requestSubgraph(
+            this.url,
+            queryBuilder.build(),
+            this.authToken,
+        );
     }
 
     public async getFilledBranches(): Promise<BranchFilledEvent[]> {
@@ -153,6 +165,14 @@ export class Subgraph {
             const onboardedBatches = data.busBatchOnboardeds.map(
                 (b: BusBatchOnboardedEvent) => ({
                     ...b,
+                    queueId: BigInt(b.queueId),
+                    batchRoot: BigInt(b.batchRoot),
+                    numUtxosInBatch: Number(b.numUtxosInBatch),
+                    leftLeafIndexInBusTree: Number(b.leftLeafIndexInBusTree),
+                    blockNumber:
+                        b.blockNumber === undefined
+                            ? undefined
+                            : Number(b.blockNumber),
                     batchIndex: Number(b.leftLeafIndexInBusTree >> 6),
                     branchIndex: Number(b.leftLeafIndexInBusTree >> 16),
                 }),
@@ -214,6 +234,7 @@ export class Subgraph {
         try {
             const {data} = await axios.get(`${this.url}/health`, {
                 timeout: REQUEST_TIMEOUT_MS,
+                headers: authHeaders(this.authToken),
             });
             const last = blockNumber(data.projection, 'lastCompletedBlock');
             const chain = blockNumber(data.projection, 'chainCompletedBlock');
@@ -225,7 +246,16 @@ export class Subgraph {
                 Math.min(last, chain),
                 blockNumber(data.projection, 'checkedBlock'),
             );
-        } catch {
+        } catch (error) {
+            if (
+                isAxiosError(error) &&
+                (error.response?.status === 401 ||
+                    error.response?.status === 403)
+            ) {
+                throw new Error(
+                    `Subgraph authentication failed (HTTP ${error.response.status})`,
+                );
+            }
             // Not a Panther projection, or it cannot report progress. Preload
             // nothing and let the scanner cover the whole range.
             return -1;
